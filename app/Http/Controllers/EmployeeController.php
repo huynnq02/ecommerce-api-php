@@ -1,42 +1,121 @@
-<?php 
-// EmployeeController.php
+<?php
 
 namespace App\Http\Controllers;
 
-use Illuminate\Http\Request;
+use App\Models\Account;
 use App\Models\Employee;
+use Illuminate\Http\Request;
 
 class EmployeeController extends Controller
 {
-    public function index()
+    public function createEmployee(Request $request)
     {
-        $employees = Employee::all();
-        return response()->json($employees);
+        try {
+            $existingAccount = Account::where('email', $request->input('email'))->first();
+
+            if ($existingAccount) {
+                return response()->json(['success' => false, 'error' => 'User with this email already exists'], 409);
+            }
+            $hashedPassword = bcrypt($request->input('password'));
+
+            $account = Account::create([
+                'email' => $request->input('email'),
+                'password' => $hashedPassword,
+                'role' => 'employee',
+                'avatar' => $request->input('avatar'),
+                'created_at' => now(),
+            ]);
+
+            $employee = Employee::create([
+                'account_id' => $account->account_id,
+                'name' => $request->input('name'),
+                'phone_number' => $request->input('phone_number'),
+                'gender' => $request->input('gender'),
+                'birthday' => $request->input('birthday'),
+                'address' => $request->input('address'),
+            ]);
+
+            return response()->json(['success' => true, 'data' => $employee], 201);
+        } catch (\Exception $e) {
+            return response()->json(['error' => $e->getMessage()], 400);
+        }
     }
 
-    public function show($id)
+    public function getEmployee($id)
     {
-        $employee = Employee::findOrFail($id);
-        return response()->json($employee);
+        try {
+            $employee = Employee::with('account')->findOrFail($id);
+            return response()->json(
+                [
+                    'success' => true,
+                    'data' => $employee
+                ],
+                200
+            );
+        } catch (\Illuminate\Database\Eloquent\ModelNotFoundException $e) {
+            return response()->json(['success' => false, 'message' => 'Employee not found'], 404);
+        } catch (\Exception $e) {
+            return response()->json(['error' => $e->getMessage()], 500);
+        }
     }
 
-    public function store(Request $request)
+    public function getAllEmployees()
     {
-        $employee = Employee::create($request->all());
-        return response()->json($employee, 201);
+        try {
+            $employees = Employee::with('account')->get();
+            return response()->json(
+                [
+                    'success' => true,
+                    'data' => $employees
+                ],
+                200
+            );
+        } catch (\Exception $e) {
+            return response()->json(['error' => $e->getMessage()], 500);
+        }
     }
-
-    public function update(Request $request, $id)
+    public function deleteEmployee($id)
     {
-        $employee = Employee::findOrFail($id);
-        $employee->update($request->all());
-        return response()->json($employee, 200);
+        try {
+            $employee = Employee::findOrFail($id);
+            $employee->delete();
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Employee deleted successfully'
+            ], 200);
+        } catch (\Illuminate\Database\Eloquent\ModelNotFoundException $e) {
+            return response()->json(['success' => false, 'message' => 'Employee not found'], 404);
+        } catch (\Exception $e) {
+            return response()->json(['error' => $e->getMessage()], 500);
+        }
     }
-
-    public function destroy($id)
+    public function updateEmployee(Request $request, $id)
     {
-        $employee = Employee::findOrFail($id);
-        $employee->delete();
-        return response()->json(null, 204);
+        try {
+            $employee = Employee::findOrFail($id);
+
+            if ($request->filled(['email', 'password', 'avatar'])) {
+                $accountFields = $request->only(['email', 'password', 'avatar']);
+                $hashedPassword = bcrypt($accountFields['password']);
+                $accountFields['password'] = $hashedPassword;
+                $employee->account->update($accountFields);
+            }
+
+            if ($request->filled(['name', 'phone_number', 'gender', 'birthday', 'address'])) {
+                $employeeFields = $request->only(['name', 'phone_number', 'gender', 'birthday', 'address']);
+                $employee->update($employeeFields);
+            }
+
+            return response()->json([
+                'success' => true,
+                'data' => $employee,
+                'message' => 'Employee updated successfully'
+            ], 200);
+        } catch (\Illuminate\Database\Eloquent\ModelNotFoundException $e) {
+            return response()->json(['success' => false, 'message' => 'Employee not found'], 404);
+        } catch (\Exception $e) {
+            return response()->json(['error' => $e->getMessage()], 500);
+        }
     }
 }

@@ -77,7 +77,7 @@ class CategoryController extends Controller
             return response()->json([
                 'success' => true,
                 'message' => 'Category deleted successfully'
-            ], 204);
+            ], 200);
         } catch (\Illuminate\Database\Eloquent\ModelNotFoundException $e) {
             return response()->json(['success' => false, 'message' => 'Category not found'], 404);
         } catch (\Exception $e) {

@@ -1,8 +1,9 @@
-<?php 
+<?php
 // ProductFactory.php
 
 namespace Database\Factories;
 
+use App\Models\Category;
 use App\Models\Product;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
@@ -12,8 +13,10 @@ class ProductFactory extends Factory
 
     public function definition()
     {
+        $category = Category::factory()->create();
+
         return [
-            'category_id' => rand(1, 5), // Adjust the range based on your category IDs
+            'category_id' => $category->category_id,
             'name' => $this->faker->word,
             'price' => $this->faker->randomFloat(2, 10, 1000),
             'description' => $this->faker->sentence,

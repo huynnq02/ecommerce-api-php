@@ -5,7 +5,6 @@ namespace App\Http\Controllers;
 use App\Models\Account;
 use App\Models\Customer;
 use Illuminate\Http\Request;
-use Illuminate\Http\Response;
 
 class CustomerController extends Controller
 {
@@ -42,10 +41,10 @@ class CustomerController extends Controller
         }
     }
 
-    public function getCustomer($customerId)
+    public function getCustomer($id)
     {
         try {
-            $customer = Customer::with('account')->findOrFail($customerId);
+            $customer = Customer::with('account')->findOrFail($id);
             return response()->json(
                 [
                     'success' => true,
@@ -75,16 +74,44 @@ class CustomerController extends Controller
             return response()->json(['error' => $e->getMessage()], 500);
         }
     }
-    public function deleteCustomer($customerId)
+    public function deleteCustomer($id)
     {
         try {
-            $customer = Customer::findOrFail($customerId);
+            $customer = Customer::findOrFail($id);
             $customer->delete();
 
             return response()->json([
                 'success' => true,
                 'message' => 'Customer deleted successfully'
-            ], 204);
+            ], 200);
+        } catch (\Illuminate\Database\Eloquent\ModelNotFoundException $e) {
+            return response()->json(['success' => false, 'message' => 'Customer not found'], 404);
+        } catch (\Exception $e) {
+            return response()->json(['error' => $e->getMessage()], 500);
+        }
+    }
+    public function updateCustomer(Request $request, $id)
+    {
+        try {
+            $customer = Customer::findOrFail($id);
+
+            if ($request->filled(['email', 'password', 'avatar'])) {
+                $accountFields = $request->only(['email', 'password', 'avatar']);
+                $hashedPassword = bcrypt($accountFields['password']);
+                $accountFields['password'] = $hashedPassword;
+                $customer->account->update($accountFields);
+            }
+
+            if ($request->filled(['name', 'phone_number', 'gender', 'birthday', 'address'])) {
+                $customerFields = $request->only(['name', 'phone_number', 'gender', 'birthday', 'address']);
+                $customer->update($customerFields);
+            }
+
+            return response()->json([
+                'success' => true,
+                'data' => $customer,
+                'message' => 'Customer updated successfully'
+            ], 200);
         } catch (\Illuminate\Database\Eloquent\ModelNotFoundException $e) {
             return response()->json(['success' => false, 'message' => 'Customer not found'], 404);
         } catch (\Exception $e) {
