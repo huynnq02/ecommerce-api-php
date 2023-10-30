@@ -2,9 +2,13 @@
 
 namespace Database\Seeders;
 
+use App\Models\Cart;
+use App\Models\Discount;
+use App\Models\Employee;
 use App\Models\Product;
 use Illuminate\Database\Seeder;
 use App\Models\Account;
+use App\Models\CartDetail;
 use App\Models\Category;
 use App\Models\Customer;
 
@@ -16,9 +20,13 @@ class DatabaseSeeder extends Seeder
         //     ->has(Customer::factory(), 'customer')
         //     ->count(10)
         //     ->create();
-        Product::factory()->count(10)->create();
+        // Product::factory()->count(10)->create();
         // Category::factory()->count(10)->create();
-
+        // Discount::factory()->count(10)->create();
+        // Cart::factory()->has(CartDetail::factory(), 'cartDetails')->count(10)->create();
+        Account::factory()
+            ->has(Employee::factory(), 'employee')
+            ->count(10)
+            ->create();
     }
 }
-

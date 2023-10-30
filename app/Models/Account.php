@@ -1,4 +1,5 @@
 <?php
+
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Concerns\HasTimestamps;
@@ -19,9 +20,13 @@ class Account extends Model
         'created_at',
     ];
 
-      // Define the relationship with the Customer model
+    // Define the relationship with the Customer model
     public function customer()
     {
         return $this->hasOne(Customer::class, 'account_id');
+    }
+    public function employee()
+    {
+        return $this->hasOne(employee::class, 'account_id');
     }
 }

@@ -13,7 +13,7 @@ class AccountFactory extends Factory
         return [
             'email' => $this->faker->unique()->safeEmail,
             'password' => bcrypt('password'),
-            'role' => 'customer', // or adjust based on your needs
+            'role' => 'customer', 
             'avatar' => $this->faker->imageUrl(),
             'created_at' => now(),
         ];

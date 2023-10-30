@@ -39,6 +39,7 @@ Route::prefix('customers')->group(function () {
     Route::get('/{id}', [CustomerController::class, 'getCustomer']);
     Route::get('/', [CustomerController::class, 'getAllCustomers']);
     Route::delete('/{id}', [CustomerController::class, 'deleteCustomer']);
+    Route::put('/{id}', [CustomerController::class, 'updateCustomer']);
 });
 
 
@@ -58,21 +59,26 @@ Route::prefix('categories')->group(function () {
     Route::delete('/{id}', [CategoryController::class, 'deleteCategory']);
 });
 
+Route::prefix('discounts')->group(function () {
+    Route::get('/', [DiscountController::class, 'getAllDiscounts']);
+    Route::get('/{id}', [DiscountController::class, 'getDiscount']);
+    Route::post('/', [DiscountController::class, 'createDiscount']);
+    Route::put('/{id}', [DiscountController::class, 'updateDiscount']);
+    Route::delete('/{id}', [DiscountController::class, 'deleteDiscount']);
+});
 
-Route::apiResource('discounts', DiscountController::class);
-Route::apiResource('carts', CartController::class);
-Route::apiResource('cartdetails', CartDetailController::class);
-Route::apiResource('orders', OrderController::class);
-Route::apiResource('orderdetails', OrderDetailController::class);
-Route::apiResource('invoices', InvoiceController::class);
-Route::apiResource('employees', EmployeeController::class);
-Route::apiResource('invoicedetails', InvoiceDetailController::class);
-Route::apiResource('suppliers', SupplierController::class);
-Route::apiResource('warehouses', WarehouseController::class);
-Route::apiResource('warehousedetails', WarehouseDetailController::class);
-Route::apiResource('reviews', ReviewController::class);
-Route::apiResource('inquiries', InquiryController::class);
+Route::prefix('carts')->group(function () {
+    Route::get('/{id}', [CartController::class, 'getCart']);
+    Route::get('/', [CartController::class, 'getAllCarts']);
+    Route::post('/', [CartController::class, 'createCart']);
+    Route::put('/{id}', [CartController::class, 'updateCart']);
+    Route::delete('/{id}', [CartController::class, 'deleteCart']);
+});
 
-
-
-
+Route::prefix('employees')->group(function () {
+    Route::post('/', [EmployeeController::class, 'createEmployee']);
+    Route::get('/{id}', [EmployeeController::class, 'getEmployee']);
+    Route::get('/', [EmployeeController::class, 'getAllEmployees']);
+    Route::delete('/{id}', [EmployeeController::class, 'deleteEmployee']);
+    Route::put('/{id}', [EmployeeController::class, 'updateEmployee']);
+});
