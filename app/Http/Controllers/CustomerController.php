@@ -2,9 +2,11 @@
 
 namespace App\Http\Controllers;
 
+use Illuminate\Pagination\LengthAwarePaginator;
 use App\Models\Account;
 use App\Models\Customer;
 use Illuminate\Http\Request;
+use App\Constants\PaginationConstants;
 
 class CustomerController extends Controller
 {
@@ -59,14 +61,30 @@ class CustomerController extends Controller
         }
     }
 
-    public function getAllCustomers()
+    public function getAllCustomers(Request $request)
     {
         try {
-            $customers = Customer::with('account')->get();
+            $perPage = $request->input('per_page', PaginationConstants::DEFAULT_PER_PAGE); // Number of items per page, default to 10.
+            $page = $request->input('page', PaginationConstants::DEFAULT_PAGE); // Current page, default to 1.
+            $customers = Customer::with('account')->paginate($perPage, ['*'], 'page', $page);
+            // Manually create a paginator response to include custom keys if needed.
+            $paginator = new LengthAwarePaginator(
+                $customers->items(),
+                $customers->total(),
+                $customers->perPage(),
+                $customers->currentPage(),
+                ['path' => $request->url(), 'query' => $request->query()]
+            );
+
             return response()->json(
                 [
                     'success' => true,
-                    'data' => $customers
+                    'data' => $paginator->items(),
+                    'pagination' => [
+                        'current_page' => $paginator->currentPage(),
+                        'last_page' => $paginator->lastPage(),
+                        'total' => $paginator->total(),
+                    ],
                 ],
                 200
             );
