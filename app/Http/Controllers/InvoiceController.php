@@ -2,10 +2,11 @@
 
 namespace App\Http\Controllers;
 
+use App\Constants\PaginationConstants;
 use App\Models\InvoiceDetail;
 use Illuminate\Http\Request;
 use App\Models\Invoice;
-
+use Illuminate\Pagination\LengthAwarePaginator;
 
 class InvoiceController extends Controller
 {
@@ -48,15 +49,38 @@ class InvoiceController extends Controller
     }
 
     // Retrieve all invoices
-    public function getAllInvoices()
+    public function getAllInvoices(Request $request)
     {
         try {
-            $invoices = Invoice::with('invoiceDetails.product')->get();
-            return response()->json(['success' => true, 'data' => $invoices], 200);
+            $perPage = $request->input('per_page',  PaginationConstants::DEFAULT_PER_PAGE); // Số hóa đơn trên mỗi trang, mặc định là 10.
+            $page = $request->input('page', PaginationConstants::DEFAULT_PAGE); // Trang hiện tại, mặc định là 1.
+
+            // Lấy danh sách hóa đơn với chi tiết và sản phẩm tương ứng
+            $invoices = Invoice::with('invoiceDetails.product')->paginate($perPage, ['*'], 'page', $page);
+
+            // Tạo thủ công một paginator response để bao gồm các khóa tùy chỉnh nếu cần.
+            $paginator = new LengthAwarePaginator(
+                $invoices->items(),
+                $invoices->total(),
+                $invoices->perPage(),
+                $invoices->currentPage(),
+                ['path' => $request->url(), 'query' => $request->query()]
+            );
+
+            return response()->json([
+                'success' => true,
+                'data' => $paginator->items(),
+                'pagination' => [
+                    'current_page' => $paginator->currentPage(),
+                    'last_page' => $paginator->lastPage(),
+                    'total' => $paginator->total(),
+                ],
+            ], 200);
         } catch (\Exception $e) {
             return response()->json(['error' => $e->getMessage()], 500);
         }
     }
+
 
     // Update an existing invoice by ID
     public function updateInvoice(Request $request, $id)

@@ -2,9 +2,11 @@
 
 namespace App\Http\Controllers;
 
+use App\Constants\PaginationConstants;
 use App\Models\Account;
 use App\Models\Employee;
 use Illuminate\Http\Request;
+use Illuminate\Pagination\LengthAwarePaginator;
 
 class EmployeeController extends Controller
 {
@@ -59,17 +61,33 @@ class EmployeeController extends Controller
         }
     }
 
-    public function getAllEmployees()
+    public function getAllEmployees(Request $request)
     {
         try {
-            $employees = Employee::with('account')->get();
-            return response()->json(
-                [
-                    'success' => true,
-                    'data' => $employees
-                ],
-                200
+            $perPage = $request->input('per_page', PaginationConstants::DEFAULT_PER_PAGE); // Số nhân viên trên mỗi trang, mặc định là 10.
+            $page = $request->input('page', PaginationConstants::DEFAULT_PAGE); // Trang hiện tại, mặc định là 1.
+
+            // Lấy danh sách nhân viên với tài khoản tương ứng
+            $employees = Employee::with('account')->paginate($perPage, ['*'], 'page', $page);
+
+            // Tạo thủ công một paginator response để bao gồm các khóa tùy chỉnh nếu cần.
+            $paginator = new LengthAwarePaginator(
+                $employees->items(),
+                $employees->total(),
+                $employees->perPage(),
+                $employees->currentPage(),
+                ['path' => $request->url(), 'query' => $request->query()]
             );
+
+            return response()->json([
+                'success' => true,
+                'data' => $paginator->items(),
+                'pagination' => [
+                    'current_page' => $paginator->currentPage(),
+                    'last_page' => $paginator->lastPage(),
+                    'total' => $paginator->total(),
+                ],
+            ], 200);
         } catch (\Exception $e) {
             return response()->json(['error' => $e->getMessage()], 500);
         }

@@ -2,9 +2,11 @@
 
 namespace App\Http\Controllers;
 
+use App\Constants\PaginationConstants;
 use Illuminate\Http\Request;
 use App\Models\Order;
 use App\Models\OrderDetail;
+use Illuminate\Pagination\LengthAwarePaginator;
 
 class OrderController extends Controller
 {
@@ -46,11 +48,33 @@ class OrderController extends Controller
     }
 
     // Retrieve all orders
-    public function getAllOrders()
+    public function getAllOrders(Request $request)
     {
         try {
-            $orders = Order::with('orderDetails.product')->get();
-            return response()->json(['success' => true, 'data' => $orders], 200);
+            $perPage = $request->input('per_page', PaginationConstants::DEFAULT_PER_PAGE); // Số đơn hàng trên mỗi trang, mặc định là 10.
+            $page = $request->input('page', PaginationConstants::DEFAULT_PAGE); // Trang hiện tại, mặc định là 1.
+
+            // Lấy danh sách đơn hàng với chi tiết và sản phẩm tương ứng
+            $orders = Order::with('orderDetails.product')->paginate($perPage, ['*'], 'page', $page);
+
+            // Tạo thủ công một paginator response để bao gồm các khóa tùy chỉnh nếu cần.
+            $paginator = new LengthAwarePaginator(
+                $orders->items(),
+                $orders->total(),
+                $orders->perPage(),
+                $orders->currentPage(),
+                ['path' => $request->url(), 'query' => $request->query()]
+            );
+
+            return response()->json([
+                'success' => true,
+                'data' => $paginator->items(),
+                'pagination' => [
+                    'current_page' => $paginator->currentPage(),
+                    'last_page' => $paginator->lastPage(),
+                    'total' => $paginator->total(),
+                ],
+            ], 200);
         } catch (\Exception $e) {
             return response()->json(['error' => $e->getMessage()], 500);
         }
