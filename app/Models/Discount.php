@@ -12,7 +12,7 @@ class Discount extends Model
 
     protected $primaryKey = 'discount_id';
     public $timestamps = false;
-
+    protected $table = 'discounts';
     protected $fillable = [
         'discount_value',
         'code',
