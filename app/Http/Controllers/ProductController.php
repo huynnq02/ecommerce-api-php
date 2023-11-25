@@ -2,22 +2,41 @@
 
 namespace App\Http\Controllers;
 
+use App\Constants\PaginationConstants;
 use Illuminate\Http\Request;
 use App\Models\Product;
+use Illuminate\Pagination\LengthAwarePaginator;
 
 class ProductController extends Controller
 {
-    public function getAllProducts()
+    public function getAllProducts(Request $request)
     {
         try {
-            $products = Product::with('category')->get();
+            $perPage = $request->input('per_page', PaginationConstants::DEFAULT_PER_PAGE); // Số sản phẩm trên mỗi trang, mặc định là 10.
+            $page = $request->input('page', PaginationConstants::DEFAULT_PAGE); // Trang hiện tại, mặc định là 1.
+            $products = Product::with('category')->paginate($perPage, ['*'], 'page', $page);
 
-            return response()->json([
-                'success' => true,
-                'data' => $products
-            ], 200);
-        } catch (\Illuminate\Database\Eloquent\ModelNotFoundException $e) {
-            return response()->json(['success' => false, 'message' => 'Product not found'], 404);
+            // Tạo thủ công một paginator response để bao gồm các khóa tùy chỉnh nếu cần.
+            $paginator = new LengthAwarePaginator(
+                $products->items(),
+                $products->total(),
+                $products->perPage(),
+                $products->currentPage(),
+                ['path' => $request->url(), 'query' => $request->query()]
+            );
+
+            return response()->json(
+                [
+                    'success' => true,
+                    'data' => $paginator->items(),
+                    'pagination' => [
+                        'current_page' => $paginator->currentPage(),
+                        'last_page' => $paginator->lastPage(),
+                        'total' => $paginator->total(),
+                    ],
+                ],
+                200
+            );
         } catch (\Exception $e) {
             return response()->json(['error' => $e->getMessage()], 500);
         }

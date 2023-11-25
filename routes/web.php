@@ -17,3 +17,6 @@ Route::get('/', function () {
     return view('welcome');
 });
 Route::get('/test-connection', [TestController::class, 'testConnection']);
+Route::get('/123', function () {
+    return 'I dont have a test connection';
+});
