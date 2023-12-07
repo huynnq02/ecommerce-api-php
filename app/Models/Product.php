@@ -29,6 +29,10 @@ class Product extends Model
         'specifications' => 'json',
         'highlight' => 'json',
     ];
+    protected $attributes = [
+        'number_of_sold' => 0,
+    ];
+
 
     // Define the relationship with the Category model
     public function category()

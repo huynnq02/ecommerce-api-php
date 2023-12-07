@@ -2,10 +2,12 @@
 
 namespace App\Http\Controllers;
 
-use App\Constants\PaginationConstants;
+use App\Models\Order;
 use App\Models\Account;
+use App\Models\Invoice;
 use App\Models\Employee;
 use Illuminate\Http\Request;
+use App\Constants\PaginationConstants;
 use Illuminate\Pagination\LengthAwarePaginator;
 
 class EmployeeController extends Controller
@@ -132,6 +134,31 @@ class EmployeeController extends Controller
             ], 200);
         } catch (\Illuminate\Database\Eloquent\ModelNotFoundException $e) {
             return response()->json(['success' => false, 'message' => 'Employee not found'], 404);
+        } catch (\Exception $e) {
+            return response()->json(['error' => $e->getMessage()], 500);
+        }
+    }
+    public function getEmployeeOrders($id)
+    {
+        try {
+            $employeeOrders = Order::where('employee_id', $id)->get();
+            return response()->json([
+                'success' => true,
+                'data' => $employeeOrders
+            ], 200);
+        } catch (\Exception $e) {
+            return response()->json(['error' => $e->getMessage()], 500);
+        }
+    }
+
+    public function getEmployeeInvoices($id)
+    {
+        try {
+            $employeeInvoices = Invoice::where('employee_id', $id)->get();
+            return response()->json([
+                'success' => true,
+                'data' => $employeeInvoices
+            ], 200);
         } catch (\Exception $e) {
             return response()->json(['error' => $e->getMessage()], 500);
         }

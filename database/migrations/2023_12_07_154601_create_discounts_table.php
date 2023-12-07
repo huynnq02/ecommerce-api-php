@@ -4,29 +4,28 @@ use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
-return new class extends Migration
+class CreateDiscountsTable extends Migration
 {
     /**
      * Run the migrations.
+     *
+     * @return void
      */
-    public function up(): void
+    public function up()
     {
         Schema::create('discounts', function (Blueprint $table) {
-            $table->id('discount_id'); // Khai báo khóa chính
-            $table->decimal('discount_value', 5, 2);
+            $table->id('discount_id');
+            $table->float('discount_value');
             $table->string('code');
             $table->date('start_day');
             $table->date('end_day');
-            $table->timestamps(); // Sử dụng timestamps (created_at và updated_at)
-
+            $table->timestamps();
         });
     }
 
-    /**
-     * Reverse the migrations.
-     */
-    public function down(): void
+
+    public function down()
     {
         Schema::dropIfExists('discounts');
     }
-};
+}
