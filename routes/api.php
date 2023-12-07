@@ -98,6 +98,9 @@ Route::group(['prefix' => 'employees', 'middleware' => 'api',], function () {
     Route::get('/', [EmployeeController::class, 'getAllEmployees']);
     Route::delete('/{id}', [EmployeeController::class, 'deleteEmployee']);
     Route::put('/{id}', [EmployeeController::class, 'updateEmployee']);
+
+    Route::get('/{id}/orders', [EmployeeController::class, 'getEmployeeOrders']);
+    Route::get('/{id}/invoices', [EmployeeController::class, 'getEmployeeInvoices']);
 });
 
 Route::group(['prefix' => 'inquiry', 'middleware' => 'api',], function () {
