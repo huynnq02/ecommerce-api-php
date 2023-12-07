@@ -13,10 +13,7 @@ class CartDetailFactory extends Factory
 
     public function definition()
     {
-        $product = Product::factory()->create();
-
         return [
-            'product_id' => $product->product_id,
             'quantity' => $this->faker->numberBetween(1, 10),
         ];
     }

@@ -15,14 +15,31 @@ class CartFactory extends Factory
 
     public function definition()
     {
-        $customer = Customer::factory()->create();
-        $discount = Discount::factory()->create();
-
+        $discount = Discount::inRandomOrder()->first(); // Get a random existing discount
+        $customer = Customer::inRandomOrder()->first(); // Get a random existing customer
         return [
-            'customer_id' => $customer->customer_id,
-            'discount_id' => $discount->discount_id,
-            'total_price' => $this->faker->randomFloat(2, 50, 500),
+            'customer_id' => $customer->id,
+            'discount_id' => $discount->id,
+            // 'total_price' => $this->faker->randomFloat(2, 50, 500),
         ];
     }
 
+    public function configure()
+    {
+        return $this->afterCreating(function (Cart $cart) {
+            // Associate Cart with CartDetail and get a random existing Product
+            CartDetail::factory()
+                ->for($cart)
+                ->create(['product_id' => Product::inRandomOrder()->first()->id, 'cart_id' => $cart->id]);
+
+            $cart->update([
+                'total_price' => $cart->cartDetails->sum(function (CartDetail $cartDetail) {
+                    // Retrieve product_price from the Product model based on product_id
+                    $product = Product::findOrFail($cartDetail->product_id);
+
+                    return $product ? $cartDetail->quantity * $product->price : 0;
+                }),
+            ]);
+        });
+    }
 }

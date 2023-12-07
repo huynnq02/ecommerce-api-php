@@ -12,9 +12,7 @@ class WarehouseDetailFactory extends Factory
     public function definition()
     {
         return [
-            'warehouse_id' => \App\Models\Warehouse::factory(),
-            'product_id' => \App\Models\Product::factory(),
-            'quantity' => $this->faker->randomNumber(2),
+            'quantity' => $this->faker->numberBetween(1, 100),
             'unit' => $this->faker->word,
         ];
     }

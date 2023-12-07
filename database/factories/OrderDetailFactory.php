@@ -12,12 +12,6 @@ class OrderDetailFactory extends Factory
     public function definition()
     {
         return [
-            'product_id' => function () {
-                return \App\Models\Product::factory()->create()->product_id;
-            },
-            'order_id' => function () {
-                return \App\Models\Order::factory()->create()->order_id;
-            },
             'quantity' => $this->faker->numberBetween(1, 10),
         ];
     }

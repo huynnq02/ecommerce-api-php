@@ -24,4 +24,12 @@ class CustomerFactory extends Factory
             ],
         ];
     }
+
+    public function configure()
+    {
+        return $this->afterCreating(function (Customer $customer) {
+            $customer->account_id = $customer->account->id;
+            $customer->save();
+        });
+    }
 }

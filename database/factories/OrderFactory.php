@@ -3,6 +3,9 @@
 namespace Database\Factories;
 
 use App\Models\Order;
+use App\Models\Product;
+use App\Models\Customer;
+use App\Models\OrderDetail;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 class OrderFactory extends Factory
@@ -11,15 +14,36 @@ class OrderFactory extends Factory
 
     public function definition()
     {
+        $customer = Customer::inRandomOrder()->first(); // Get a random existing customer
+
         return [
-            'customer_id' => function () {
-                return \App\Models\Customer::factory()->create()->customer_id;
-            },
-            'total_price' => $this->faker->randomFloat(2, 10, 500),
-            'payment_method' => $this->faker->randomElement(['credit_card', 'paypal', 'cash']),
-            'destination' => $this->faker->address,
-            'date' => $this->faker->dateTimeBetween('-1 year', 'now'),
-            'status' => $this->faker->randomElement(['pending', 'processing', 'shipped', 'delivered']),
+            'customer_id' => $customer->id,
+            // 'total_price' => $this->faker->randomFloat(2, 50, 500),
+            'payment_method' => $this->faker->randomElement(['Credit Card', 'PayPal', 'Cash']),
+            'destination' => [
+                'street' => $this->faker->streetAddress,
+                'city' => $this->faker->city,
+                // Add any other address details as needed
+            ],
+            'date' => $this->faker->date,
+            'status' => $this->faker->randomElement(['Processing', 'Shipped', 'Delivered']),
         ];
+    }
+
+    public function configure()
+    {
+        return $this->afterCreating(function (Order $order) {
+            // Associate Order with OrderDetail and get a random existing Product
+            OrderDetail::factory()
+                ->for($order)
+                ->create(['product_id' => Product::inRandomOrder()->first()->id, 'order_id' => $order->id]);
+            $order->update([
+                'total_price' => $order->orderDetails->sum(function (OrderDetail $orderDetail) {
+                    // Retrieve product_price from the Product model based on product_id
+                    $product = Product::findOrFail($orderDetail->product_id);
+                    return $product ? $orderDetail->quantity * $product->price : 0;
+                }),
+            ]);
+        });
     }
 }

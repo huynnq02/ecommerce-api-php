@@ -13,10 +13,10 @@ class ProductFactory extends Factory
 
     public function definition()
     {
-        $category = Category::factory()->create();
+        $category = Category::inRandomOrder()->first(); // Fetch a random existing category
 
         return [
-            'category_id' => $category->category_id,
+            'category_id' => $category->id,
             'name' => $this->faker->word,
             'price' => $this->faker->randomFloat(2, 10, 1000),
             'description' => $this->faker->sentence,
