@@ -13,10 +13,10 @@ class SupplierFactory extends Factory
     {
         return [
             'name' => $this->faker->company,
-            'address' => [
+            'address' => json_encode([
                 'street' => $this->faker->streetAddress,
                 'city' => $this->faker->city,
-            ],
+            ]),
             'phone_number' => $this->faker->phoneNumber,
             'email' => $this->faker->unique()->safeEmail,
         ];

@@ -13,15 +13,15 @@ class ReviewFactory extends Factory
 
     public function definition()
     {
-        $customer = Customer::inRandomOrder()->first(); // Get a random existing customer
-        $product = Product::inRandomOrder()->first(); // Get a random existing product
+        $customer = Customer::inRandomOrder()->firstOrFail(); // Get a random existing customer
+        $product = Product::inRandomOrder()->firstOrFail(); // Get a random existing product
 
         return [
             'date' => $this->faker->date,
             'star' => $this->faker->numberBetween(1, 5),
-            'content' => $this->faker->paragraph,
-            'product_id' => $product->id,
-            'customer_id' => $customer->id,
+            'content' => $this->faker->word,
+            'product_id' => $product->product_id,
+            'customer_id' => $customer->customer_id,
         ];
     }
 }

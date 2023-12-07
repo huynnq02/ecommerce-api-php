@@ -22,15 +22,15 @@ class DatabaseSeeder extends Seeder
 {
     public function run()
     {
-        Customer::factory()->count(20)->created(); // Create customer and account data
-        Employee::factory()->count(20)->created();
+        Customer::factory()->count(20)->create(); // Create customer and account data
+        Employee::factory()->count(20)->create();
         Category::factory()->count(10)->create();
         Discount::factory()->count(20)->create();
         Product::factory() // Create product data from existing category data
-            ->count(40)
+            ->count(10)
             ->create();
         Cart::factory()->count(20)->create();
-        Order::factory()->count(20)->create();
+        Order::factory()->count(10)->create();
         Invoice::factory()->count(20)->create();
         Supplier::factory()->count(10)->create();
         Warehouse::factory()->count(20)->create();

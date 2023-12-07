@@ -2,11 +2,15 @@
 
 namespace App\Http\Controllers;
 
-use Illuminate\Pagination\LengthAwarePaginator;
+use App\Models\Order;
+use App\Models\Review;
 use App\Models\Account;
+use App\Models\Inquiry;
+use App\Models\Invoice;
 use App\Models\Customer;
 use Illuminate\Http\Request;
 use App\Constants\PaginationConstants;
+use Illuminate\Pagination\LengthAwarePaginator;
 
 class CustomerController extends Controller
 {
@@ -132,6 +136,60 @@ class CustomerController extends Controller
             ], 200);
         } catch (\Illuminate\Database\Eloquent\ModelNotFoundException $e) {
             return response()->json(['success' => false, 'message' => 'Customer not found'], 404);
+        } catch (\Exception $e) {
+            return response()->json(['error' => $e->getMessage()], 500);
+        }
+    }
+    public function getCustomerInvoices($id)
+    {
+        try {
+            $customerInvoices = Invoice::where('customer_id', $id)->get();
+
+            return response()->json([
+                'success' => true,
+                'data' => $customerInvoices,
+            ], 200);
+        } catch (\Exception $e) {
+            return response()->json(['error' => $e->getMessage()], 500);
+        }
+    }
+
+    public function getCustomerOrders($id)
+    {
+        try {
+            $customerOrders = Order::where('customer_id', $id)->get();
+
+            return response()->json([
+                'success' => true,
+                'data' => $customerOrders,
+            ], 200);
+        } catch (\Exception $e) {
+            return response()->json(['error' => $e->getMessage()], 500);
+        }
+    }
+    public function getCustomerInquiries($id)
+    {
+        try {
+            $customerInquiries = Inquiry::where('customer_id', $id)->get();
+
+            return response()->json([
+                'success' => true,
+                'data' => $customerInquiries,
+            ], 200);
+        } catch (\Exception $e) {
+            return response()->json(['error' => $e->getMessage()], 500);
+        }
+    }
+
+    public function getCustomerReviews($id)
+    {
+        try {
+            $customerReviews = Review::where('customer_id', $id)->get();
+
+            return response()->json([
+                'success' => true,
+                'data' => $customerReviews,
+            ], 200);
         } catch (\Exception $e) {
             return response()->json(['error' => $e->getMessage()], 500);
         }

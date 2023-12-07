@@ -16,26 +16,26 @@ class InvoiceFactory extends Factory
 
     public function definition()
     {
-        $employee = Employee::inRandomOrder()->first(); // Get a random existing employee
-        $customer = Customer::inRandomOrder()->first(); // Get a random existing customer
-        $discount = Discount::inRandomOrder()->first(); // Get a random existing discount
-
+        $employee = Employee::inRandomOrder()->firstOrFail();
+        $customer = Customer::inRandomOrder()->firstOrFail();
+        $discount = Discount::inRandomOrder()->firstOrFail();
         return [
             'date' => $this->faker->date,
-            'total_price' => $this->faker->randomFloat(2, 50, 500),
-            'employee_id' => $employee->id,
-            'customer_id' => $customer->id,
-            'discount_id' => $discount->id,
+            // 'total_price' => $this->faker->randomFloat(2, 50, 500),
+            'total_price' => $this->faker->randomFloat(2, 50, 500), // need to fix this
+
+            'employee_id' => $employee->employee_id,
+            'customer_id' => $customer->customer_id,
+            'discount_id' => $discount->discount_id,
         ];
     }
 
     public function configure()
     {
         return $this->afterCreating(function (Invoice $invoice) {
-            // Associate Invoice with InvoiceDetail and get a random existing Product
             InvoiceDetail::factory()
                 ->for($invoice)
-                ->create(['product_id' => Product::inRandomOrder()->first()->id, 'invoice_id' => $invoice->id]);
+                ->create(['product_id' => Product::inRandomOrder()->firstOrFail()->product_id, 'invoice_id' => $invoice->invoice_id]);
         });
     }
 }

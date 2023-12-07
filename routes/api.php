@@ -53,6 +53,11 @@ Route::group(['prefix' => 'customers', 'middleware' => 'api',], function () {
     Route::get('/', [CustomerController::class, 'getAllCustomers']);
     Route::delete('/{id}', [CustomerController::class, 'deleteCustomer']);
     Route::put('/{id}', [CustomerController::class, 'updateCustomer']);
+
+    Route::get('/{id}/orders', [CustomerController::class, 'getCustomerOrders']);
+    Route::get('/{id}/invoices', [CustomerController::class, 'getCustomerInvoices']);
+    Route::get('/{id}/inquiries', [CustomerController::class, 'getCustomerInquiries']);
+    Route::get('/{id}/reviews', [CustomerController::class, 'getCustomerReviews']);
 });
 
 Route::group(['prefix' => 'products', 'middleware' => 'api',], function () {

@@ -27,7 +27,7 @@ class EmployeeFactory extends Factory
     public function configure()
     {
         return $this->afterCreating(function (Employee $employee) {
-            $employee->account_id = $employee->account->id;
+            $employee->account_id = $employee->account->account_id;
             $employee->save();
         });
     }
