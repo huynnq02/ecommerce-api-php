@@ -2,10 +2,11 @@
 
 namespace App\Http\Controllers;
 
-use App\Constants\PaginationConstants;
-use Illuminate\Http\Request;
 use App\Models\Order;
+use App\Models\Product;
 use App\Models\OrderDetail;
+use Illuminate\Http\Request;
+use App\Constants\PaginationConstants;
 use Illuminate\Pagination\LengthAwarePaginator;
 
 class OrderController extends Controller
@@ -29,7 +30,10 @@ class OrderController extends Controller
                 'order_id' => $order->order_id,
                 'quantity' => $request->input('quantity'),
             ]);
-
+            $product = Product::find($request->input('product_id'));
+            if ($product) {
+                $product->update(['number_of_sold' => $product->number_of_sold + 1]);
+            }
             return response()->json(['success' => true, 'data' => ['order' => $order, 'orderDetail' => $orderDetails]], 201);
         } catch (\Exception $e) {
             return response()->json(['error' => $e->getMessage()], 400);
