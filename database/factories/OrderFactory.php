@@ -15,7 +15,7 @@ class OrderFactory extends Factory
 
     public function definition()
     {
-        $customer = Customer::inRandomOrder()->firstOrFail(); // Get a random existing customer
+        $customer = Customer::inRandomOrder()->firstOrFail();
 
         return [
             'customer_id' => $customer->customer_id,
@@ -36,14 +36,15 @@ class OrderFactory extends Factory
     public function configure()
     {
         return $this->afterCreating(function (Order $order) {
-            // Associate Order with OrderDetail and get a random existing Product
             OrderDetail::factory()
                 ->for($order)
                 ->create(['product_id' => Product::inRandomOrder()->firstOrFail()->product_id, 'order_id' => $order->order_id]);
             $order->update([
                 'total_price' => $order->orderDetails->sum(function (OrderDetail $orderDetail) {
-                    // Retrieve product_price from the Product model based on product_id
                     $product = Product::findOrFail($orderDetail->product_id);
+                    $product->update([
+                        'number_of_sold' => $product->number_of_sold + 1,
+                    ]);
                     return $product ? $orderDetail->quantity * $product->price : 0;
                 }),
             ]);

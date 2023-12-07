@@ -13,8 +13,8 @@ class InquiryFactory extends Factory
 
     public function definition()
     {
-        $customer = Customer::inRandomOrder()->firstOrFail(); // Get a random existing customer
-        $employee = Employee::inRandomOrder()->firstOrFail(); // Get a random existing employee
+        $customer = Customer::inRandomOrder()->firstOrFail(); 
+        $employee = Employee::inRandomOrder()->firstOrFail(); 
 
         return [
             'date' => $this->faker->date,

@@ -29,14 +29,12 @@ class CartFactory extends Factory
     public function configure()
     {
         return $this->afterCreating(function (Cart $cart) {
-            // Associate Cart with CartDetail and get a random existing Product
             CartDetail::factory()
                 ->for($cart)
                 ->create(['product_id' => Product::inRandomOrder()->firstOrFail()->product_id, 'cart_id' => $cart->cart_id]);
 
             $cart->update([
                 'total_price' => $cart->cartDetails->sum(function (CartDetail $cartDetail) {
-                    // Retrieve product_price from the Product model based on product_id
                     $product = Product::findOrFail($cartDetail->product_id);
 
                     return $product ? $cartDetail->quantity * $product->price : 0;

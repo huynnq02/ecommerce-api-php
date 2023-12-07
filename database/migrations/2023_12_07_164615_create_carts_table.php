@@ -9,7 +9,7 @@ class CreateCartsTable extends Migration
     public function up()
     {
         Schema::create('carts', function (Blueprint $table) {
-            $table->id('cart_id'); // Use id() instead of bigIncrements('cart_id')
+            $table->id('cart_id'); 
             $table->unsignedBigInteger('customer_id');
             $table->unsignedBigInteger('discount_id')->nullable();
             $table->float('total_price');

@@ -20,7 +20,7 @@ class CreateProductsTable extends Migration
             $table->json('specifications');
             $table->json('highlight');
             $table->timestamps(); // Adds 'created_at' and 'updated_at' columns
-
+            $table->integer('number_of_sold')->default(0); 
             // Add foreign key constraint
             $table->foreign('category_id')->references('category_id')->on('categories');
         });

@@ -15,8 +15,8 @@ class WarehouseFactory extends Factory
 
     public function definition()
     {
-        $employee = Employee::inRandomOrder()->firstOrFail(); // Get a random existing employee
-        $supplier = Supplier::inRandomOrder()->firstOrFail(); // Get a random existing supplier
+        $employee = Employee::inRandomOrder()->firstOrFail(); 
+        $supplier = Supplier::inRandomOrder()->firstOrFail(); 
 
         return [
             'date' => $this->faker->date,
@@ -31,14 +31,11 @@ class WarehouseFactory extends Factory
     public function configure()
     {
         return $this->afterCreating(function (Warehouse $warehouse) {
-            // Associate Warehouse with WarehouseDetail and get a random existing Product
             WarehouseDetail::factory()
                 ->for($warehouse)
                 ->create(['product_id' => Product::inRandomOrder()->firstOrFail()->product_id, 'warehouse_id' => $warehouse->warehouse_id]);
             $totalPrice = $warehouse->warehouseDetails->sum(function (WarehouseDetail $warehouseDetail) {
-                // Retrieve product_price from the Product model based on product_id
                 $product = Product::findOrFail($warehouseDetail->product_id);
-
                 return $product ? $warehouseDetail->quantity * $product->price : 0;
             });
 
