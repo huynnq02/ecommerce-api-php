@@ -60,15 +60,18 @@ Route::group(['prefix' => 'customers', 'middleware' => 'api',], function () {
     Route::get('/{id}/reviews', [CustomerController::class, 'getCustomerReviews']);
 });
 
-Route::group(['prefix' => 'products', 'middleware' => 'api',], function () {
-    Route::get('/', [ProductController::class, 'getAllProducts']);
-    Route::get('/{id}', [ProductController::class, 'getProduct']);
-    Route::post('/', [ProductController::class, 'createProduct']);
-    Route::put('/{id}', [ProductController::class, 'updateProduct']);
-    Route::delete('/{id}', [ProductController::class, 'deleteProduct']);
+route::group(['prefix' => 'products'], function () {
+    route::get('/{id}', [productcontroller::class, 'getproduct'])->withoutmiddleware(['auth']);;
+    route::get('/', [productcontroller::class, 'getAllproducts'])->withoutmiddleware(['auth']);;
+
+    route::middleware('api')->group(function () {
+        route::post('/', [productcontroller::class, 'createproduct']);
+        route::delete('/{id}', [productcontroller::class, 'deleteproduct']);
+        route::put('/{id}', [productcontroller::class, 'updateproduct']);
+    });
 });
 
-Route::group(['prefix' => 'categories', 'middleware' => 'api',], function () {
+route::group(['prefix' => 'categories', 'middleware' => 'api',], function () {
     Route::get('/{id}', [CategoryController::class, 'getCategory']);
     Route::get('/', [CategoryController::class, 'getAllCategories']);
     Route::post('/', [CategoryController::class, 'createCategory']);
