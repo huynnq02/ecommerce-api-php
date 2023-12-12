@@ -49,15 +49,15 @@ Route::group(['prefix' => 'auth', 'middleware' => 'api',], function () {
 
 Route::group(['prefix' => 'customers', 'middleware' => 'api',], function () {
     Route::post('/', [CustomerController::class, 'createCustomer']);
-    Route::get('/{id}', [CustomerController::class, 'getCustomer']);
-    Route::get('/', [CustomerController::class, 'getAllCustomers']);
+    Route::get('/{id}', [CustomerController::class, 'getCustomer'])->withoutmiddleware(['auth']);
+    Route::get('/', [CustomerController::class, 'getAllCustomers'])->withoutmiddleware(['auth']);
     Route::delete('/{id}', [CustomerController::class, 'deleteCustomer']);
     Route::put('/{id}', [CustomerController::class, 'updateCustomer']);
 
-    Route::get('/{id}/orders', [CustomerController::class, 'getCustomerOrders']);
-    Route::get('/{id}/invoices', [CustomerController::class, 'getCustomerInvoices']);
-    Route::get('/{id}/inquiries', [CustomerController::class, 'getCustomerInquiries']);
-    Route::get('/{id}/reviews', [CustomerController::class, 'getCustomerReviews']);
+    Route::get('/{id}/orders', [CustomerController::class, 'getCustomerOrders'])->withoutmiddleware(['auth']);
+    Route::get('/{id}/invoices', [CustomerController::class, 'getCustomerInvoices'])->withoutmiddleware(['auth']);
+    Route::get('/{id}/inquiries', [CustomerController::class, 'getCustomerInquiries'])->withoutmiddleware(['auth']);
+    Route::get('/{id}/reviews', [CustomerController::class, 'getCustomerReviews'])->withoutmiddleware(['auth']);
 });
 
 route::group(['prefix' => 'products'], function () {
@@ -71,12 +71,25 @@ route::group(['prefix' => 'products'], function () {
     });
 });
 
-route::group(['prefix' => 'categories', 'middleware' => 'api',], function () {
-    Route::get('/{id}', [CategoryController::class, 'getCategory']);
-    Route::get('/', [CategoryController::class, 'getAllCategories']);
-    Route::post('/', [CategoryController::class, 'createCategory']);
-    Route::put('/{id}', [CategoryController::class, 'updateCategory']);
-    Route::delete('/{id}', [CategoryController::class, 'deleteCategory']);
+
+// route::group(['prefix' => 'categories', 'middleware' => 'api',], function () {
+//     Route::get('/{id}', [CategoryController::class, 'getCategory']);
+//     Route::get('/', [CategoryController::class, 'getAllCategories']);
+//     Route::post('/', [CategoryController::class, 'createCategory']);
+//     Route::put('/{id}', [CategoryController::class, 'updateCategory']);
+//     Route::delete('/{id}', [CategoryController::class, 'deleteCategory']);
+// });
+route::group(['prefix' => 'categories'], function () {
+    Route::get('/{id}', [CategoryController::class, 'getCategory'])->withoutmiddleware(['auth']);
+    Route::get('/', [CategoryController::class, 'getAllCategories'])->withoutmiddleware(['auth']);
+    Route::post('/', [CategoryController::class, 'createCategory'])->withoutmiddleware(['auth']);
+    Route::put('/{id}', [CategoryController::class, 'updateCategory'])->withoutmiddleware(['auth']);
+    Route::delete('/{id}', [CategoryController::class, 'deleteCategory'])->withoutmiddleware(['auth']);
+    route::middleware('api')->group(function () {
+        // Route::post('/', [CategoryController::class, 'createCategory']);
+        // Route::put('/{id}', [CategoryController::class, 'updateCategory']);
+        // Route::delete('/{id}', [CategoryController::class, 'deleteCategory']);
+    });
 });
 
 Route::group(['prefix' => 'discounts', 'middleware' => 'api',], function () {
@@ -107,11 +120,14 @@ Route::group(['prefix' => 'employees', 'middleware' => 'api',], function () {
 });
 
 Route::group(['prefix' => 'inquiry', 'middleware' => 'api',], function () {
-    Route::post('/', [InquiryController::class, 'createInquiry']);
-    Route::get('/{id}', [InquiryController::class, 'getInquiry']);
-    Route::get('/', [InquiryController::class, 'getAllInquiry']);
-    Route::delete('/{id}', [InquiryController::class, 'deleteInquiry']);
-    Route::put('/{id}', [InquiryController::class, 'updateInquiry']);
+    Route::get('/{id}', [InquiryController::class, 'getInquiry'])->withoutmiddleware(['auth']);
+    Route::get('/', [InquiryController::class, 'getAllInquiry'])->withoutmiddleware(['auth']);
+  
+    Route::middleware('api')->group(function () {
+        Route::post('/', [InquiryController::class, 'createInquiry']);
+        Route::delete('/{id}', [InquiryController::class, 'deleteInquiry']);
+        Route::put('/{id}', [InquiryController::class, 'updateInquiry']);
+    });
 });
 
 Route::group(['prefix' => 'invoice', 'middleware' => 'api',], function () {
@@ -123,17 +139,19 @@ Route::group(['prefix' => 'invoice', 'middleware' => 'api',], function () {
 });
 
 Route::group(['prefix' => 'reviews', 'middleware' => 'api',], function () {
-    Route::post('/', [ReviewController::class, 'createReview']);
-    Route::get('/{id}', [ReviewController::class, 'getReview']);
-    Route::get('/', [ReviewController::class, 'getAllReview']);
-    Route::delete('/{id}', [ReviewController::class, 'deleteReview']);
-    Route::put('/{id}', [ReviewController::class, 'updateReview']);
+    Route::get('/{id}', [ReviewController::class, 'getReview'])->withoutmiddleware(['auth']);
+    Route::get('/', [ReviewController::class, 'getAllReview'])->withoutmiddleware(['auth']);
+    Route::middleware('api')->group(function () {
+        Route::post('/', [ReviewController::class, 'createReview']);
+        Route::delete('/{id}', [ReviewController::class, 'deleteReview']);
+        Route::put('/{id}', [ReviewController::class, 'updateReview']);
+    });
 });
 
 Route::group(['prefix' => 'order', 'middleware' => 'api',], function () {
     Route::post('/', [OrderController::class, 'createOrder']);
-    Route::get('/{id}', [OrderController::class, 'getOrder']);
-    Route::get('/', [OrderController::class, 'getAllOrders']);
+    Route::get('/{id}', [OrderController::class, 'getOrder'])->withoutmiddleware(['auth']);
+    Route::get('/', [OrderController::class, 'getAllOrders'])->withoutmiddleware(['auth']);
     Route::delete('/{id}', [OrderController::class, 'deleteOrder']);
     Route::put('/{id}', [OrderController::class, 'updateOrder']);
 });
