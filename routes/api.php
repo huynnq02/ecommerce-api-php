@@ -51,6 +51,7 @@ Route::group(['prefix' => 'customers', 'middleware' => 'api',], function () {
     Route::post('/', [CustomerController::class, 'createCustomer']);
     Route::get('/{id}', [CustomerController::class, 'getCustomer'])->withoutmiddleware(['auth']);
     Route::get('/', [CustomerController::class, 'getAllCustomers'])->withoutmiddleware(['auth']);
+
     Route::delete('/{id}', [CustomerController::class, 'deleteCustomer']);
     Route::put('/{id}', [CustomerController::class, 'updateCustomer']);
 
