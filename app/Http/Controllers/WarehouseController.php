@@ -11,16 +11,14 @@ class WarehouseController extends Controller
     public function createWarehouse(Request $request)
     {
         try {
-            // Tạo một đối tượng Warehouse từ dữ liệu yêu cầu
             $warehouse = Warehouse::create([
-                'date' => $request->input('date'),
-                'total_price' => $request->input('total_price'),
+                'warehouse_name' => $request->input('warehouse_name'),
+                'image' => $request->input('image'),
+                'location' => $request->input('location'),
                 'employee_id' => $request->input('employee_id'),
-                'supplier_id' => $request->input('supplier_id'),
             ]);
 
-            // Lưu thông tin chi tiết kho vào WarehouseDetail
-            $warehouseDetails = $request->input('warehouse_details'); // Đây là một mảng chứa thông tin các sản phẩm trong kho
+            $warehouseDetails = $request->input('warehouse_details');
 
             foreach ($warehouseDetails as $detail) {
                 WarehouseDetail::create([
@@ -37,41 +35,19 @@ class WarehouseController extends Controller
         }
     }
 
-    public function getWarehouse($id)
-    {
-        try {
-            // Lấy thông tin kho cùng với chi tiết kho liên quan từ cơ sở dữ liệu
-            $warehouse = Warehouse::with('warehouseDetails.product')->findOrFail($id);
-            return response()->json(['success' => true, 'data' => $warehouse], 200);
-        } catch (\Exception $e) {
-            return response()->json(['error' => $e->getMessage()], 404);
-        }
-    }
-    public function getAllWarehouse()
-    {
-        try {
-            // Lấy tất cả các kho cùng với thông tin liên quan
-            $warehouses = Warehouse::with('employee', 'supplier', 'warehouseDetails.product')->get();
-
-            return response()->json(['success' => true, 'data' => $warehouses], 200);
-        } catch (\Exception $e) {
-            return response()->json(['error' => $e->getMessage()], 500);
-        }
-    }
-
     public function updateWarehouse(Request $request, $id)
     {
         try {
             $warehouse = Warehouse::findOrFail($id);
 
             $warehouse->update([
-                'date' => $request->input('date'),
-                'total_price' => $request->input('total_price'),
+                'warehouse_name' => $request->input('warehouse_name'),
+                'image' => $request->input('image'),
+                'location' => $request->input('location'),
                 'employee_id' => $request->input('employee_id'),
-                'supplier_id' => $request->input('supplier_id'),
             ]);
 
-            // Cập nhật chi tiết kho nếu có trong yêu cầu
+            // Update warehouse details if present in the request
             if ($request->has('warehouse_details')) {
                 $warehouseDetails = $request->input('warehouse_details');
 
@@ -103,6 +79,29 @@ class WarehouseController extends Controller
             return response()->json(['error' => $e->getMessage()], 500);
         }
     }
+
+    public function getWarehouse($id)
+    {
+        try {
+            // Lấy thông tin kho cùng với chi tiết kho liên quan từ cơ sở dữ liệu
+            $warehouse = Warehouse::with('warehouseDetails.product')->findOrFail($id);
+            return response()->json(['success' => true, 'data' => $warehouse], 200);
+        } catch (\Exception $e) {
+            return response()->json(['error' => $e->getMessage()], 404);
+        }
+    }
+    public function getAllWarehouse()
+    {
+        try {
+            // Lấy tất cả các kho cùng với thông tin liên quan
+            $warehouses = Warehouse::with('employee', 'supplier', 'warehouseDetails.product')->get();
+
+            return response()->json(['success' => true, 'data' => $warehouses], 200);
+        } catch (\Exception $e) {
+            return response()->json(['error' => $e->getMessage()], 500);
+        }
+    }
+
 
     public function deleteWarehouse($id)
     {
