@@ -22,7 +22,7 @@ class CartController extends Controller
                 'product_id' => $request->input('product_id'),
                 'quantity' => $request->input('quantity'),
             ]);
-            return response()->json(['success' => true, 'data' => ['cart' => $cart, 'cart_detail' => $cartDetail]], 201);
+            return response()->json(['success' => true, 'data' => ['cart' => $cart, 'cart_detail 1' => $cartDetail]], 201);
         } catch (\Exception $e) {
             return response()->json(['error' => $e->getMessage()], 400);
         }
