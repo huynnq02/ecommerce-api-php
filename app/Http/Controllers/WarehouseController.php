@@ -5,31 +5,38 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use App\Models\Warehouse;
 use App\Models\WarehouseDetail;
+use Illuminate\Support\Facades\DB;
 
 class WarehouseController extends Controller
 {
     public function createWarehouse(Request $request)
     {
         try {
-            $warehouse = Warehouse::create([
-                'warehouse_name' => $request->input('warehouse_name'),
-                'image' => $request->input('image'),
-                'location' => $request->input('location'),
-                'employee_id' => $request->input('employee_id'),
-            ]);
-
-            $warehouseDetails = $request->input('warehouse_details');
-
-            foreach ($warehouseDetails as $detail) {
-                WarehouseDetail::create([
-                    'warehouse_id' => $warehouse->warehouse_id,
-                    'product_id' => $detail['product_id'],
-                    'quantity' => $detail['quantity'],
-                    'unit' => $detail['unit'],
+            $result = DB::transaction(function () use ($request) {
+                $warehouse = Warehouse::create([
+                    'warehouse_name' => $request->input('warehouse_name'),
+                    'image' => $request->input('image'),
+                    'location' => $request->input('location'),
+                    'employee_id' => $request->input('employee_id'),
                 ]);
-            }
 
-            return response()->json(['success' => true, 'data' => ['warehouse' => $warehouse, 'warehouseDetails' => $warehouseDetails]], 201);
+                $warehouseDetails = $request->input('warehouse_details');
+
+                foreach ($warehouseDetails as $detail) {
+                    WarehouseDetail::create([
+                        'warehouse_id' => $warehouse->warehouse_id,
+                        'product_id' => $detail['product_id'],
+                        'quantity' => $detail['quantity'],
+                        'unit' => $detail['unit'],
+                    ]);
+                }
+
+                // Return both $warehouse and $warehouseDetails
+                return ['warehouse' => $warehouse, 'warehouseDetails' => $warehouseDetails];
+            });
+
+            // Access $warehouse and $warehouseDetails outside the closure
+            return response()->json(['success' => true, 'data' => $result], 201);
         } catch (\Exception $e) {
             return response()->json(['error' => $e->getMessage()], 400);
         }

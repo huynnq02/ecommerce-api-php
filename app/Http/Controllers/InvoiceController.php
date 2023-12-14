@@ -7,6 +7,7 @@ use App\Models\InvoiceDetail;
 use Illuminate\Http\Request;
 use App\Models\Invoice;
 use Illuminate\Pagination\LengthAwarePaginator;
+use Illuminate\Support\Facades\DB;
 
 class InvoiceController extends Controller
 {
@@ -14,24 +15,28 @@ class InvoiceController extends Controller
     public function createInvoice(Request $request)
     {
         try {
-            $invoice = Invoice::create([
-                'date' => $request->input('date'),
-                'total_price' => $request->input('total_price'),
-                'employee_id' => $request->input('employee_id'),
-                'customer_id' => $request->input('customer_id'),
-                'discount_id' => $request->input('discount_id'),
-            ]);
+            $result = DB::transaction(function () use ($request) {
+                $invoice = Invoice::create([
+                    'date' => $request->input('date'),
+                    'total_price' => $request->input('total_price'),
+                    'employee_id' => $request->input('employee_id'),
+                    'customer_id' => $request->input('customer_id'),
+                    'discount_id' => $request->input('discount_id'),
+                ]);
 
-            // Create invoice details
-            $invoiceDetails = InvoiceDetail::create(
-                [
+                // Create invoice details
+                $invoiceDetails = InvoiceDetail::create([
                     'product_id' => $request->input('product_id'),
-                    'invoice_id' => $request->input('invoice_id'),
+                    'invoice_id' => $invoice->invoice_id,
                     'quantity' => $request->input('quantity'),
-                ]
-            );
+                ]);
 
-            return response()->json(['success' => true, 'data' => ['invoice' => $invoice, 'invoiceDetail' => $invoiceDetails]], 201);
+                // Return both $invoice and $invoiceDetails
+                return ['invoice' => $invoice, 'invoiceDetail' => $invoiceDetails];
+            });
+
+            // Access $invoice and $invoiceDetails outside the closure
+            return response()->json(['success' => true, 'data' => $result], 201);
         } catch (\Exception $e) {
             return response()->json(['error' => $e->getMessage()], 400);
         }
