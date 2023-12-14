@@ -2,9 +2,12 @@
 
 namespace App\Http\Controllers;
 
-use App\Constants\PaginationConstants;
-use Illuminate\Http\Request;
+use App\Models\Order;
 use App\Models\Product;
+use App\Models\OrderDetail;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
+use App\Constants\PaginationConstants;
 use Illuminate\Pagination\LengthAwarePaginator;
 
 class ProductController extends Controller
@@ -99,6 +102,43 @@ class ProductController extends Controller
             ], 204);
         } catch (\Exception $e) {
             return response()->json(['success' => false, 'error' => $e->getMessage()], 500);
+        }
+    }
+    public function buyProduct(Request $request, $id)
+    {
+        try {
+            $product = Product::findOrFail($id);
+
+            $order = DB::transaction(function () use ($product, $request) {
+                $order = Order::create([
+                    'customer_id' => auth()->id(),
+                    'total_price' => $product->price,
+                    'payment_method' => $request->input('payment_method', 'Online Payment'), // Default payment method or get from request
+                    'destination' => $request->input('destination', ''), // Default destination or get from request
+                    'date' => now(),
+                    'status' => Order::DEFAULT_STATUS,
+                ]);
+
+                OrderDetail::create([
+                    'order_id' => $order->order_id,
+                    'product_id' => $product->product_id,
+                    'quantity' => $request->input('quantity'),
+                    'price' => $product->price,
+                ]);
+
+                $product->increment('number_of_sold', $request->input('quantity'));
+                $this->updateWarehouse($product, $request->input('quantity'));
+
+                return $order;
+            });
+
+            return response()->json([
+                'success' => true,
+                'data' => $order,
+                'message' => 'Product bought successfully',
+            ], 201);
+        } catch (\Exception $e) {
+            return response()->json(['success' => false, 'error' => $e->getMessage()], 400);
         }
     }
 }

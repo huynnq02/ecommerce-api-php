@@ -33,4 +33,24 @@ class Order extends Model
     {
         return $this->hasMany(OrderDetail::class, 'order_id');
     }
+    const VALID_STATUSES = ['Processing', 'Shipping', 'Complete', 'Canceled'];
+    // Default status value
+    const DEFAULT_STATUS = 'Processing';
+
+    // Define the default attributes
+    protected $attributes = [
+        'status' => self::DEFAULT_STATUS,
+    ];
+    // Validate the status attribute
+
+    public static function boot()
+    {
+        parent::boot();
+
+        static::validating(function ($model) {
+            if (!in_array($model->status, self::VALID_STATUSES)) {
+                throw new \InvalidArgumentException("Invalid status value");
+            }
+        });
+    }
 }
