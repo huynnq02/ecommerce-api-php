@@ -68,6 +68,7 @@ route::group(['prefix' => 'products'], function () {
         route::post('/', [productcontroller::class, 'createproduct']);
         route::delete('/{id}', [productcontroller::class, 'deleteproduct']);
         route::put('/{id}', [productcontroller::class, 'updateproduct']);
+        Route::post('/buy/{id}', [ProductController::class, 'buyProduct']);
     });
 });
 
