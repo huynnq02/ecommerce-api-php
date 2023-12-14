@@ -44,7 +44,7 @@ class OrderController extends Controller
     public function getOrder($id)
     {
         try {
-            $order = Order::with('orderDetails.product')->findOrFail($id);
+            $order = Order::with('orderDetails.product','customer.account')->findOrFail($id);
             return response()->json(['success' => true, 'data' => $order], 200);
         } catch (\Exception $e) {
             return response()->json(['error' => $e->getMessage()], 404);
