@@ -12,12 +12,6 @@ class InvoiceDetailFactory extends Factory
     public function definition()
     {
         return [
-            'product_id' => function () {
-                return \App\Models\Product::factory()->create()->product_id;
-            },
-            'invoice_id' => function () {
-                return \App\Models\Invoice::factory()->create()->invoice_id;
-            },
             'quantity' => $this->faker->numberBetween(1, 10),
         ];
     }

@@ -4,6 +4,9 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use App\Models\Review;
+use Illuminate\Pagination\LengthAwarePaginator;
+use App\Constants\PaginationConstants;
+
 
 class ReviewController extends Controller
 {
@@ -23,13 +26,34 @@ class ReviewController extends Controller
             return response()->json(['error' => $e->getMessage()], 400);
         }
     }
-    public function getAllReview()
+    public function getAllReview(Request $request)
     {
         try {
-            // Lấy tất cả các đánh giá kèm theo thông tin liên quan
-            $reviews = Review::with('product', 'customer')->get();
+            $perPage = $request->input('per_page', PaginationConstants::DEFAULT_PER_PAGE); // Số sản phẩm trên mỗi trang, mặc định là 10.
+            $page = $request->input('page', PaginationConstants::DEFAULT_PAGE); // Trang hiện tại, mặc định là 1.
+            $reviews = Review::with('product', 'customer')->orderBy('date', 'desc')->paginate($perPage, ['*'], 'page', $page);
 
-            return response()->json(['success' => true, 'data' => $reviews], 200);
+            // Tạo thủ công một paginator response để bao gồm các khóa tùy chỉnh nếu cần.
+            $paginator = new LengthAwarePaginator(
+                $reviews->items(),
+                $reviews->total(),
+                $reviews->perPage(),
+                $reviews->currentPage(),
+                ['path' => $request->url(), 'query' => $request->query()]
+            );
+
+            return response()->json(
+                [
+                    'success' => true,
+                    'data' => $paginator->items(),
+                    'pagination' => [
+                        'current_page' => $paginator->currentPage(),
+                        'last_page' => $paginator->lastPage(),
+                        'total' => $paginator->total(),
+                    ],
+                ],
+                200
+            );
         } catch (\Exception $e) {
             return response()->json(['error' => $e->getMessage()], 500);
         }

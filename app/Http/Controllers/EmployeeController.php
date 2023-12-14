@@ -2,42 +2,52 @@
 
 namespace App\Http\Controllers;
 
-use App\Constants\PaginationConstants;
+use App\Models\Order;
 use App\Models\Account;
+use App\Models\Invoice;
 use App\Models\Employee;
 use Illuminate\Http\Request;
+use App\Constants\PaginationConstants;
 use Illuminate\Pagination\LengthAwarePaginator;
+use Illuminate\Support\Facades\DB;
 
 class EmployeeController extends Controller
 {
     public function createEmployee(Request $request)
     {
         try {
-            $existingAccount = Account::where('email', $request->input('email'))->first();
+            $result = DB::transaction(function () use ($request) {
+                $existingAccount = Account::where('email', $request->input('email'))->first();
 
-            if ($existingAccount) {
-                return response()->json(['success' => false, 'error' => 'User with this email already exists'], 409);
-            }
-            $hashedPassword = bcrypt($request->input('password'));
+                if ($existingAccount) {
+                    return response()->json(['success' => false, 'error' => 'User with this email already exists'], 409);
+                }
 
-            $account = Account::create([
-                'email' => $request->input('email'),
-                'password' => $hashedPassword,
-                'role' => 'employee',
-                'avatar' => $request->input('avatar'),
-                'created_at' => now(),
-            ]);
+                $hashedPassword = bcrypt($request->input('password'));
 
-            $employee = Employee::create([
-                'account_id' => $account->account_id,
-                'name' => $request->input('name'),
-                'phone_number' => $request->input('phone_number'),
-                'gender' => $request->input('gender'),
-                'birthday' => $request->input('birthday'),
-                'address' => $request->input('address'),
-            ]);
+                $account = Account::create([
+                    'email' => $request->input('email'),
+                    'password' => $hashedPassword,
+                    'role' => 'employee',
+                    'avatar' => $request->input('avatar'),
+                    'created_at' => now(),
+                ]);
 
-            return response()->json(['success' => true, 'data' => $employee], 201);
+                $employee = Employee::create([
+                    'account_id' => $account->account_id,
+                    'name' => $request->input('name'),
+                    'phone_number' => $request->input('phone_number'),
+                    'gender' => $request->input('gender'),
+                    'birthday' => $request->input('birthday'),
+                    'address' => $request->input('address'),
+                ]);
+
+                // Return both $account and $employee
+                return ['account' => $account, 'employee' => $employee];
+            });
+
+            // Access $account and $employee outside the closure
+            return response()->json(['success' => true, 'data' => $result['employee']], 201);
         } catch (\Exception $e) {
             return response()->json(['error' => $e->getMessage()], 400);
         }
@@ -132,6 +142,31 @@ class EmployeeController extends Controller
             ], 200);
         } catch (\Illuminate\Database\Eloquent\ModelNotFoundException $e) {
             return response()->json(['success' => false, 'message' => 'Employee not found'], 404);
+        } catch (\Exception $e) {
+            return response()->json(['error' => $e->getMessage()], 500);
+        }
+    }
+    public function getEmployeeOrders($id)
+    {
+        try {
+            $employeeOrders = Order::where('employee_id', $id)->get();
+            return response()->json([
+                'success' => true,
+                'data' => $employeeOrders
+            ], 200);
+        } catch (\Exception $e) {
+            return response()->json(['error' => $e->getMessage()], 500);
+        }
+    }
+
+    public function getEmployeeInvoices($id)
+    {
+        try {
+            $employeeInvoices = Invoice::where('employee_id', $id)->get();
+            return response()->json([
+                'success' => true,
+                'data' => $employeeInvoices
+            ], 200);
         } catch (\Exception $e) {
             return response()->json(['error' => $e->getMessage()], 500);
         }

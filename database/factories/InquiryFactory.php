@@ -3,6 +3,8 @@
 namespace Database\Factories;
 
 use App\Models\Inquiry;
+use App\Models\Customer;
+use App\Models\Employee;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 class InquiryFactory extends Factory
@@ -11,17 +13,15 @@ class InquiryFactory extends Factory
 
     public function definition()
     {
+        $customer = Customer::inRandomOrder()->firstOrFail(); 
+        $employee = Employee::inRandomOrder()->firstOrFail(); 
+
         return [
-            'date' => $this->faker->dateTimeThisYear,
-            'employee_id' => function () {
-                return \App\Models\Employee::factory()->create()->employee_id;
-            },
-            'customer_id' => function () {
-                return \App\Models\Customer::factory()->create()->customer_id;
-            },
+            'date' => $this->faker->date,
             'star' => $this->faker->numberBetween(1, 5),
-            'content' => $this->faker->paragraph,
-            // ...Thêm các trường và giá trị mẫu khác
+            'content' => $this->faker->word,
+            'customer_id' => $customer->customer_id,
+            'employee_id' => $employee->employee_id,
         ];
     }
 }

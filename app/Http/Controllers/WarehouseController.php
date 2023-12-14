@@ -5,57 +5,40 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use App\Models\Warehouse;
 use App\Models\WarehouseDetail;
+use Illuminate\Support\Facades\DB;
 
 class WarehouseController extends Controller
 {
     public function createWarehouse(Request $request)
     {
         try {
-            // Tạo một đối tượng Warehouse từ dữ liệu yêu cầu
-            $warehouse = Warehouse::create([
-                'date' => $request->input('date'),
-                'total_price' => $request->input('total_price'),
-                'employee_id' => $request->input('employee_id'),
-                'supplier_id' => $request->input('supplier_id'),
-            ]);
-
-            // Lưu thông tin chi tiết kho vào WarehouseDetail
-            $warehouseDetails = $request->input('warehouse_details'); // Đây là một mảng chứa thông tin các sản phẩm trong kho
-
-            foreach ($warehouseDetails as $detail) {
-                WarehouseDetail::create([
-                    'warehouse_id' => $warehouse->warehouse_id,
-                    'product_id' => $detail['product_id'],
-                    'quantity' => $detail['quantity'],
-                    'unit' => $detail['unit'],
+            $result = DB::transaction(function () use ($request) {
+                $warehouse = Warehouse::create([
+                    'warehouse_name' => $request->input('warehouse_name'),
+                    'image' => $request->input('image'),
+                    'location' => $request->input('location'),
+                    'employee_id' => $request->input('employee_id'),
                 ]);
-            }
 
-            return response()->json(['success' => true, 'data' => ['warehouse' => $warehouse, 'warehouseDetails' => $warehouseDetails]], 201);
+                $warehouseDetails = $request->input('warehouse_details');
+
+                foreach ($warehouseDetails as $detail) {
+                    WarehouseDetail::create([
+                        'warehouse_id' => $warehouse->warehouse_id,
+                        'product_id' => $detail['product_id'],
+                        'quantity' => $detail['quantity'],
+                        'unit' => $detail['unit'],
+                    ]);
+                }
+
+                // Return both $warehouse and $warehouseDetails
+                return ['warehouse' => $warehouse, 'warehouseDetails' => $warehouseDetails];
+            });
+
+            // Access $warehouse and $warehouseDetails outside the closure
+            return response()->json(['success' => true, 'data' => $result], 201);
         } catch (\Exception $e) {
             return response()->json(['error' => $e->getMessage()], 400);
-        }
-    }
-
-    public function getWarehouse($id)
-    {
-        try {
-            // Lấy thông tin kho cùng với chi tiết kho liên quan từ cơ sở dữ liệu
-            $warehouse = Warehouse::with('warehouseDetails.product')->findOrFail($id);
-            return response()->json(['success' => true, 'data' => $warehouse], 200);
-        } catch (\Exception $e) {
-            return response()->json(['error' => $e->getMessage()], 404);
-        }
-    }
-    public function getAllWarehouse()
-    {
-        try {
-            // Lấy tất cả các kho cùng với thông tin liên quan
-            $warehouses = Warehouse::with('employee', 'supplier', 'warehouseDetails.product')->get();
-
-            return response()->json(['success' => true, 'data' => $warehouses], 200);
-        } catch (\Exception $e) {
-            return response()->json(['error' => $e->getMessage()], 500);
         }
     }
 
@@ -65,13 +48,13 @@ class WarehouseController extends Controller
             $warehouse = Warehouse::findOrFail($id);
 
             $warehouse->update([
-                'date' => $request->input('date'),
-                'total_price' => $request->input('total_price'),
+                'warehouse_name' => $request->input('warehouse_name'),
+                'image' => $request->input('image'),
+                'location' => $request->input('location'),
                 'employee_id' => $request->input('employee_id'),
-                'supplier_id' => $request->input('supplier_id'),
             ]);
 
-            // Cập nhật chi tiết kho nếu có trong yêu cầu
+            // Update warehouse details if present in the request
             if ($request->has('warehouse_details')) {
                 $warehouseDetails = $request->input('warehouse_details');
 
@@ -103,6 +86,29 @@ class WarehouseController extends Controller
             return response()->json(['error' => $e->getMessage()], 500);
         }
     }
+
+    public function getWarehouse($id)
+    {
+        try {
+            // Lấy thông tin kho cùng với chi tiết kho liên quan từ cơ sở dữ liệu
+            $warehouse = Warehouse::with('warehouseDetails.product')->findOrFail($id);
+            return response()->json(['success' => true, 'data' => $warehouse], 200);
+        } catch (\Exception $e) {
+            return response()->json(['error' => $e->getMessage()], 404);
+        }
+    }
+    public function getAllWarehouse()
+    {
+        try {
+            // Lấy tất cả các kho cùng với thông tin liên quan
+            $warehouses = Warehouse::with('employee', 'supplier', 'warehouseDetails.product')->get();
+
+            return response()->json(['success' => true, 'data' => $warehouses], 200);
+        } catch (\Exception $e) {
+            return response()->json(['error' => $e->getMessage()], 500);
+        }
+    }
+
 
     public function deleteWarehouse($id)
     {

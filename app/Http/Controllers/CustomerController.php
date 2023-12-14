@@ -2,42 +2,54 @@
 
 namespace App\Http\Controllers;
 
-use Illuminate\Pagination\LengthAwarePaginator;
+use App\Models\Order;
+use App\Models\Review;
 use App\Models\Account;
+use App\Models\Inquiry;
+use App\Models\Invoice;
 use App\Models\Customer;
 use Illuminate\Http\Request;
 use App\Constants\PaginationConstants;
+use Illuminate\Pagination\LengthAwarePaginator;
+use Illuminate\Support\Facades\DB;
 
 class CustomerController extends Controller
 {
     public function createCustomer(Request $request)
     {
         try {
-            $existingAccount = Account::where('email', $request->input('email'))->first();
+            $result = DB::transaction(function () use ($request) {
+                $existingAccount = Account::where('email', $request->input('email'))->first();
 
-            if ($existingAccount) {
-                return response()->json(['success' => false, 'error' => 'User with this email already exists'], 409);
-            }
-            $hashedPassword = bcrypt($request->input('password'));
+                if ($existingAccount) {
+                    return response()->json(['success' => false, 'error' => 'User with this email already exists'], 409);
+                }
 
-            $account = Account::create([
-                'email' => $request->input('email'),
-                'password' => $hashedPassword,
-                'role' => 'customer',
-                'avatar' => $request->input('avatar'),
-                'created_at' => now(),
-            ]);
+                $hashedPassword = bcrypt($request->input('password'));
 
-            $customer = Customer::create([
-                'account_id' => $account->account_id,
-                'name' => $request->input('name'),
-                'phone_number' => $request->input('phone_number'),
-                'gender' => $request->input('gender'),
-                'birthday' => $request->input('birthday'),
-                'address' => $request->input('address'),
-            ]);
+                $account = Account::create([
+                    'email' => $request->input('email'),
+                    'password' => $hashedPassword,
+                    'role' => 'customer',
+                    'avatar' => $request->input('avatar'),
+                    'created_at' => now(),
+                ]);
 
-            return response()->json(['success' => true, 'data' => $customer], 201);
+                $customer = Customer::create([
+                    'account_id' => $account->account_id,
+                    'name' => $request->input('name'),
+                    'phone_number' => $request->input('phone_number'),
+                    'gender' => $request->input('gender'),
+                    'birthday' => $request->input('birthday'),
+                    'address' => $request->input('address'),
+                ]);
+
+                // Return both $account and $customer
+                return ['account' => $account, 'customer' => $customer];
+            });
+
+            // Access $account and $customer outside the closure
+            return response()->json(['success' => true, 'data' => $result['customer']], 201);
         } catch (\Exception $e) {
             return response()->json(['error' => $e->getMessage()], 400);
         }
@@ -132,6 +144,60 @@ class CustomerController extends Controller
             ], 200);
         } catch (\Illuminate\Database\Eloquent\ModelNotFoundException $e) {
             return response()->json(['success' => false, 'message' => 'Customer not found'], 404);
+        } catch (\Exception $e) {
+            return response()->json(['error' => $e->getMessage()], 500);
+        }
+    }
+    public function getCustomerInvoices($id)
+    {
+        try {
+            $customerInvoices = Invoice::where('customer_id', $id)->get();
+
+            return response()->json([
+                'success' => true,
+                'data' => $customerInvoices,
+            ], 200);
+        } catch (\Exception $e) {
+            return response()->json(['error' => $e->getMessage()], 500);
+        }
+    }
+
+    public function getCustomerOrders($id)
+    {
+        try {
+            $customerOrders = Order::where('customer_id', $id)->get();
+
+            return response()->json([
+                'success' => true,
+                'data' => $customerOrders,
+            ], 200);
+        } catch (\Exception $e) {
+            return response()->json(['error' => $e->getMessage()], 500);
+        }
+    }
+    public function getCustomerInquiries($id)
+    {
+        try {
+            $customerInquiries = Inquiry::where('customer_id', $id)->get();
+
+            return response()->json([
+                'success' => true,
+                'data' => $customerInquiries,
+            ], 200);
+        } catch (\Exception $e) {
+            return response()->json(['error' => $e->getMessage()], 500);
+        }
+    }
+
+    public function getCustomerReviews($id)
+    {
+        try {
+            $customerReviews = Review::where('customer_id', $id)->get();
+
+            return response()->json([
+                'success' => true,
+                'data' => $customerReviews,
+            ], 200);
         } catch (\Exception $e) {
             return response()->json(['error' => $e->getMessage()], 500);
         }

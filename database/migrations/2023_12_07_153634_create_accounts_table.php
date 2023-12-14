@@ -4,28 +4,23 @@ use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
-return new class extends Migration
+class CreateAccountsTable extends Migration
 {
-    /**
-     * Run the migrations.
-     */
-    public function up(): void
+    public function up()
     {
         Schema::create('accounts', function (Blueprint $table) {
-            $table->id('account_id'); // Khai báo khóa chính
+            $table->id('account_id');
             $table->string('email');
             $table->string('password');
             $table->string('role');
             $table->string('avatar')->nullable();
+            // $table->date('created_at');
             $table->timestamps();
         });
     }
 
-    /**
-     * Reverse the migrations.
-     */
-    public function down(): void
+    public function down()
     {
         Schema::dropIfExists('accounts');
     }
-};
+}

@@ -3,7 +3,10 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
+use App\Models\Customer;
 use App\Models\Inquiry;
+use Illuminate\Pagination\LengthAwarePaginator;
+use App\Constants\PaginationConstants;
 
 class InquiryController extends Controller
 {
@@ -35,14 +38,46 @@ class InquiryController extends Controller
         }
     }
 
-    public function getAllInquiry()
+    // public function getAllInquiry()
+    // {
+    //     try {
+    //         $inquiry = Inquiry::orderBy('date', 'desc')->get();
+    //         return response()->json(['success' => true, 'data' => $inquiry], 200);
+    //     } catch (\Exception $e) {
+    //         return response()->json(['error' => $e->getMessage()], 404);
+    //     }
+    // }
+    public function getAllInquiry(Request $request)
     {
         try {
-            $inquiry = Inquiry::all();
-            return response()->json(['success' => true, 'data' => $inquiry], 200);
+            $perPage = $request->input('per_page', PaginationConstants::DEFAULT_PER_PAGE); // Number of items per page, default to 10.
+            $page = $request->input('page', PaginationConstants::DEFAULT_PAGE); // Current page, default to 1.
+            $inquiry = Inquiry::with("customer", "employee")->orderBy('date', 'desc')->paginate($perPage, ['*'], 'page', $page);
+            // Manually create a paginator response to include custom keys if needed.
+            $paginator = new LengthAwarePaginator(
+                $inquiry->items(),
+                $inquiry->total(),
+                $inquiry->perPage(),
+                $inquiry->currentPage(),
+                ['path' => $request->url(), 'query' => $request->query()]
+            );
+
+            return response()->json(
+                [
+                    'success' => true,
+                    'data' => $paginator->items(),
+                    'pagination' => [
+                        'current_page' => $paginator->currentPage(),
+                        'last_page' => $paginator->lastPage(),
+                        'total' => $paginator->total(),
+                    ],
+                ],
+                200
+            );
         } catch (\Exception $e) {
-            return response()->json(['error' => $e->getMessage()], 404);
+            return response()->json(['error' => $e->getMessage()], 500);
         }
+        
     }
 
     // Update an existing inquiry by ID
@@ -81,3 +116,5 @@ class InquiryController extends Controller
         }
     }
 }
+
+

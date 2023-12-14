@@ -13,7 +13,7 @@ class ProductFactory extends Factory
 
     public function definition()
     {
-        $category = Category::factory()->create();
+        $category = Category::inRandomOrder()->firstOrFail();
 
         return [
             'category_id' => $category->category_id,
