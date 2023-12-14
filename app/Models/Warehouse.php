@@ -14,10 +14,14 @@ class Warehouse extends Model
     public $timestamps = false;
 
     protected $fillable = [
-        'date',
-        'total_price',
+        'warehouse_name',
+        'image',
+        'location',
         'employee_id',
-        'supplier_id',
+    ];
+    // Cast the 'location' attribute as JSON
+    protected $casts = [
+        'location' => 'json',
     ];
 
     // Define the relationship with the Employee model
@@ -25,6 +29,7 @@ class Warehouse extends Model
     {
         return $this->belongsTo(Employee::class, 'employee_id');
     }
+
 
     // Define the relationship with the Supplier model
     public function supplier()
