@@ -29,7 +29,7 @@ class OrderFactory extends Factory
                 'city' => $this->faker->city,
             ]),
             'date' => $this->faker->date,
-            'status' => $this->faker->randomElement(['Processing', 'Shipped', 'Delivered']),
+            'status' => $this->faker->randomElement(['Processing', 'Shipping', 'Complete', 'Canceled']),
         ];
     }
 

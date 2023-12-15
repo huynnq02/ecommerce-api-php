@@ -47,7 +47,7 @@ class Order extends Model
     {
         parent::boot();
 
-        static::validating(function ($model) {
+        static::saving(function ($model) {
             if (!in_array($model->status, self::VALID_STATUSES)) {
                 throw new \InvalidArgumentException("Invalid status value");
             }

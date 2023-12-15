@@ -2,12 +2,20 @@
 
 namespace App\Http\Controllers;
 
+use App\Helpers\getCoordinatesHelper;
 use App\Models\Order;
 use App\Models\Product;
 use App\Models\OrderDetail;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Http;
 use App\Constants\PaginationConstants;
+use Illuminate\Http\Client\RequestException;
 use Illuminate\Pagination\LengthAwarePaginator;
+use Illuminate\Support\Facades\DB;
+
+use function App\Helpers\getCoordinates;
+use function App\Helpers\getCoordinatesHelper;
 
 class OrderController extends Controller
 {
@@ -15,26 +23,32 @@ class OrderController extends Controller
     public function createOrder(Request $request)
     {
         try {
-            $order = Order::create([
-                'customer_id' => $request->input('customer_id'),
-                'total_price' => $request->input('total_price'),
-                'payment_method' => $request->input('payment_method'),
-                'destination' => $request->input('destination'),
-                'date' => $request->input('date'),
-                'status' => $request->input('status'),
-            ]);
+            $order = DB::transaction(function () use ($request) {
+                $order = Order::create([
+                    'customer_id' => $request->input('customer_id'),
+                    'total_price' => $request->input('total_price'),
+                    'payment_method' => $request->input('payment_method'),
+                    'destination' => $request->input('destination'),
+                    'date' => $request->input('date'),
+                    'status' => $request->input('status'),
+                ]);
 
-            // Create order details
-            $orderDetails = OrderDetail::create([
-                'product_id' => $request->input('product_id'),
-                'order_id' => $order->order_id,
-                'quantity' => $request->input('quantity'),
-            ]);
-            $product = Product::find($request->input('product_id'));
-            if ($product) {
-                $product->update(['number_of_sold' => $product->number_of_sold + 1]);
-            }
-            return response()->json(['success' => true, 'data' => ['order' => $order, 'orderDetail' => $orderDetails]], 201);
+                // Create order details
+                $orderDetails = OrderDetail::create([
+                    'product_id' => $request->input('product_id'),
+                    'order_id' => $order->order_id,
+                    'quantity' => $request->input('quantity'),
+                ]);
+
+                $product = Product::find($request->input('product_id'));
+                if ($product) {
+                    $product->update(['number_of_sold' => $product->number_of_sold + 1]);
+                }
+
+                return $order;
+            });
+
+            return response()->json(['success' => true, 'data' => ['order' => $order]], 201);
         } catch (\Exception $e) {
             return response()->json(['error' => $e->getMessage()], 400);
         }
@@ -121,6 +135,22 @@ class OrderController extends Controller
             return response()->json(['success' => true, 'message' => 'Order deleted successfully'], 200);
         } catch (\Exception $e) {
             return response()->json(['error' => $e->getMessage()], 404);
+        }
+    }
+    // Get latitude and longitude for a destination with nested JSON structure
+    public function getCoordinates(Request $request)
+    {
+        try {
+            $location = $request->input('location');
+            Log::info("oke");
+            $data = getCoordinatesHelper($location);
+            Log::info("oke1");
+
+            return response()->json(['success' => true, 'message' => $data], 200);
+
+            // response as response
+        } catch (\Exception $e) {
+            return response()->json(['error' => $e->getMessage()], 500);
         }
     }
 }

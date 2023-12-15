@@ -6,23 +6,31 @@ namespace App\Http\Controllers;
 use App\Models\CartDetail;
 use Illuminate\Http\Request;
 use App\Models\Cart;
+use Illuminate\Support\Facades\DB;
 
 class CartController extends Controller
 {
     public function createCart(Request $request)
     {
         try {
-            $cart = Cart::create([
-                'customer_id' => $request->input('customer_id'),
-                'discount_id' => $request->input('discount_id'),
-                'total_price' => $request->input('total_price'),
-            ]);
-            $cartDetail = CartDetail::create([
-                'cart_id' => $cart->cart_id,
-                'product_id' => $request->input('product_id'),
-                'quantity' => $request->input('quantity'),
-            ]);
-            return response()->json(['success' => true, 'data' => ['cart' => $cart, 'cart_detail' => $cartDetail]], 201);
+            $cart = DB::transaction(function () use ($request) {
+                $cart = Cart::create([
+                    'customer_id' => $request->input('customer_id'),
+                    'discount_id' => $request->input('discount_id'),
+                    'total_price' => $request->input('total_price'),
+                ]);
+
+                // Create cart detail
+                $cartDetail = CartDetail::create([
+                    'cart_id' => $cart->cart_id,
+                    'product_id' => $request->input('product_id'),
+                    'quantity' => $request->input('quantity'),
+                ]);
+
+                return ['cart' => $cart, 'cart_detail' => $cartDetail];
+            });
+
+            return response()->json(['success' => true, 'data' => ['cart' => $cart]], 201);
         } catch (\Exception $e) {
             return response()->json(['error' => $e->getMessage()], 400);
         }
