@@ -13,9 +13,9 @@ class CreateCustomersTable extends Migration
             $table->foreignId('account_id')->constrained('accounts', 'account_id');
             $table->string('name');
             $table->string('phone_number');
-            $table->string('gender');
-            $table->string('birthday');
-            $table->json('address');
+            $table->string('gender')->nullable();
+            $table->string('birthday')->nullable();
+            $table->json('address')->nullable();
             $table->timestamps();
         });
     }

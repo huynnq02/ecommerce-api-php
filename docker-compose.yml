@@ -3,6 +3,7 @@ services:
   laravel-docker:
     container_name: laravel-docker
     build: .
+    dockerfile: Dockerfile
     volumes:
       - ./app:/var/www/html
     ports:
