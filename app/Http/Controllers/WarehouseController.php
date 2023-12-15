@@ -39,8 +39,23 @@ class WarehouseController extends Controller
                     'quantity' => $detail['quantity'],
                     'unit' => $detail['unit'],
                 ]);
+
+                $warehouseDetails = $request->input('warehouse_details');
+
+                foreach ($warehouseDetails as $detail) {
+                    WarehouseDetail::create([
+                        'warehouse_id' => $warehouse->warehouse_id,
+                        'product_id' => $detail['product_id'],
+                        'quantity' => $detail['quantity'],
+                        'unit' => $detail['unit'],
+                    ]);
+                }
+
+                // Return both $warehouse and $warehouseDetails
+                return ['warehouse' => $warehouse, 'warehouseDetails' => $warehouseDetails];
             }
 
+            // Access $warehouse and $warehouseDetails outside the closure
             return response()->json(['success' => true, 'data' => ['warehouse' => $warehouse, 'warehouseDetails' => $warehouseDetails]], 201);
         } catch (\Exception $e) {
             return response()->json(['error' => $e->getMessage()], 400);
