@@ -131,12 +131,15 @@ Route::group(['prefix' => 'reviews', 'middleware' => 'api',], function () {
     Route::put('/{id}', [ReviewController::class, 'updateReview']);
 });
 
-Route::group(['prefix' => 'order', 'middleware' => 'api',], function () {
+Route::group([
+    'prefix' => 'order', 'middleware' => 'api',
+], function () {
     Route::post('/', [OrderController::class, 'createOrder']);
     Route::get('/{id}', [OrderController::class, 'getOrder']);
     Route::get('/', [OrderController::class, 'getAllOrders']);
     Route::delete('/{id}', [OrderController::class, 'deleteOrder']);
     Route::put('/{id}', [OrderController::class, 'updateOrder']);
+    Route::post('/get-coordinates', [OrderController::class, 'getCoordinates'])->withoutmiddleware(['auth']);;
 });
 
 Route::group(['prefix' => 'supplier', 'middleware' => 'api',], function () {
@@ -148,7 +151,7 @@ Route::group(['prefix' => 'supplier', 'middleware' => 'api',], function () {
 });
 
 Route::group(['prefix' => 'warehouse', 'middleware' => 'api',], function () {
-    Route::post('/', [WarehouseController::class, 'createWarehouse']);
+    Route::post('/', [WarehouseController::class, 'createWarehouse'])->withoutmiddleware(['auth']);;
     Route::get('/{id}', [WarehouseController::class, 'getWarehouse']);
     Route::get('/', [WarehouseController::class, 'getAllWarehouse']);
     Route::delete('/{id}', [WarehouseController::class, 'deleteWarehouse']);

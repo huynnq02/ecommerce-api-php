@@ -2,12 +2,19 @@
 
 namespace App\Http\Controllers;
 
+use App\Helpers\getCoordinatesHelper;
 use App\Models\Order;
 use App\Models\Product;
 use App\Models\OrderDetail;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Http;
 use App\Constants\PaginationConstants;
+use Illuminate\Http\Client\RequestException;
 use Illuminate\Pagination\LengthAwarePaginator;
+
+use function App\Helpers\getCoordinates;
+use function App\Helpers\getCoordinatesHelper;
 
 class OrderController extends Controller
 {
@@ -121,6 +128,22 @@ class OrderController extends Controller
             return response()->json(['success' => true, 'message' => 'Order deleted successfully'], 200);
         } catch (\Exception $e) {
             return response()->json(['error' => $e->getMessage()], 404);
+        }
+    }
+    // Get latitude and longitude for a destination with nested JSON structure
+    public function getCoordinates(Request $request)
+    {
+        try {
+            $location = $request->input('location');
+            Log::info("oke");
+            $data = getCoordinatesHelper($location);
+            Log::info("oke1");
+
+            return response()->json(['success' => true, 'message' => $data], 200);
+
+            // response as response
+        } catch (\Exception $e) {
+            return response()->json(['error' => $e->getMessage()], 500);
         }
     }
 }

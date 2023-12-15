@@ -2,19 +2,31 @@
 
 namespace App\Http\Controllers;
 
-use Illuminate\Http\Request;
 use App\Models\Warehouse;
+use Illuminate\Http\Request;
 use App\Models\WarehouseDetail;
+use Illuminate\Support\Facades\Log;
+
+use App\Helpers\getCoordinatesHelper;
+use function App\Helpers\getCoordinatesHelper;
 
 class WarehouseController extends Controller
 {
     public function createWarehouse(Request $request)
     {
         try {
+            Log::info("1");
+            $data = getCoordinatesHelper($request->input('location'));
+
+            // Add latitude and longitude to the existing location array
+            $locationWithLatLon = array_merge($request->input('location'), ['lat' => $data[0], 'lon' => $data[1]]);
+            Log::info("2");
+            Log::info($locationWithLatLon);
+
             $warehouse = Warehouse::create([
                 'warehouse_name' => $request->input('warehouse_name'),
                 'image' => $request->input('image'),
-                'location' => $request->input('location'),
+                'location' => $locationWithLatLon,
                 'employee_id' => $request->input('employee_id'),
             ]);
 
