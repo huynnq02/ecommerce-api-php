@@ -3,10 +3,12 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Cart;
 use App\Models\CartDetail;
 use Illuminate\Http\Request;
-use App\Models\Cart;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
+use Tymon\JWTAuth\Contracts\Providers\Auth;
 
 class CartController extends Controller
 {
@@ -60,9 +62,31 @@ class CartController extends Controller
             }
 
             if ($request->filled(['product_id', 'quantity'])) {
-                $cartDetailFields = $request->only(['product_id', 'quantity']);
-                $cart->cartDetails->first()->update($cartDetailFields);
+                $product_id = $request->input('product_id');
+                $quantity = $request->input('quantity');
+
+                $cartDetail = $cart->cartDetails->where('product_id', $product_id)->first();
+
+                if ($cartDetail) {
+                    if ($quantity > 0) {
+                        $cartDetail->update(['quantity' => $quantity]);
+                    } else {
+                        $cartDetail->delete();
+                    }
+                } else {
+                    // If cart detail does not exist, create a new one
+                    CartDetail::create([
+                        'cart_id' => $cart->cart_id,
+                        'product_id' => $product_id,
+                        'quantity' => $quantity,
+                    ]);
+                }
             }
+            $cart->refresh();
+            $totalPrice = $cart->cartDetails->sum(function ($detail) {
+                return $detail->quantity * $detail->product->price;
+            });
+            $cart->update(['total_price' => $totalPrice]);
 
             return response()->json([
                 'success' => true,
@@ -88,6 +112,60 @@ class CartController extends Controller
             ], 200);
         } catch (\Illuminate\Database\Eloquent\ModelNotFoundException $e) {
             return response()->json(['success' => false, 'message' => 'Cart not found'], 404);
+        } catch (\Exception $e) {
+            return response()->json(['error' => $e->getMessage()], 500);
+        }
+    }
+    public function deleteProductFromCart($id, $product_id)
+    {
+        try {
+            $cart = Cart::findOrFail($id);
+
+            $cartDetail = $cart->cartDetails->where('product_id', $product_id)->first();
+
+            if ($cartDetail) {
+                $cartDetail->delete();
+
+                $cart->refresh();
+                $totalPrice = $cart->cartDetails->sum(function ($detail) {
+                    return $detail->quantity * $detail->product->price;
+                });
+                $cart->update(['total_price' => $totalPrice]);
+
+                return response()->json([
+                    'success' => true,
+                    'data' => $cart,
+                    'message' => 'Product deleted from the cart successfully',
+                ], 200);
+            } else {
+                return response()->json(['success' => false, 'message' => 'Product not found in the cart'], 404);
+            }
+        } catch (\Illuminate\Database\Eloquent\ModelNotFoundException $e) {
+            return response()->json(['success' => false, 'message' => 'Cart not found'], 404);
+        } catch (\Exception $e) {
+            return response()->json(['error' => $e->getMessage()], 500);
+        }
+    }
+
+    public function viewCart()
+    {
+        try {
+            $user = auth('api')->user();
+            Log::info($user);
+            if (!$user || !$user->customer) {
+                return response()->json(['success' => false, 'message' => 'Customer not found'], 404);
+            }
+
+            $cart = Cart::where('customer_id', $user->customer->customer_id)->with('cartDetails.product')->first();
+
+            if ($cart) {
+                return response()->json([
+                    'success' => true,
+                    'data' => $cart,
+                ], 200);
+            } else {
+                return response()->json(['success' => false, 'message' => 'Cart not found'], 404);
+            }
         } catch (\Exception $e) {
             return response()->json(['error' => $e->getMessage()], 500);
         }

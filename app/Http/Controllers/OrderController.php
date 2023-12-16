@@ -153,4 +153,42 @@ class OrderController extends Controller
             return response()->json(['error' => $e->getMessage()], 500);
         }
     }
+    public function getCustomerOrderHistory()
+    {
+        try {
+            $user = auth('api')->user();
+
+            if (!$user || !$user->customer) {
+                return response()->json(['success' => false, 'message' => 'Customer not found'], 404);
+            }
+
+            $orders = Order::where('customer_id', $user->customer->customer_id)
+                ->with('orderDetails.product')
+                ->get();
+
+            $formattedOrders = $orders->map(function ($order) {
+                $formattedOrderDetails = $order->orderDetails->map(function ($orderDetail) {
+                    return [
+                        'product_id' => $orderDetail->product_id,
+                        'quantity' => $orderDetail->quantity,
+                        'product' => $orderDetail->product,
+                    ];
+                });
+
+                return [
+                    'order_id' => $order->order_id,
+                    'total_price' => $order->total_price,
+                    'payment_method' => $order->payment_method,
+                    'destination' => $order->destination,
+                    'date' => $order->date,
+                    'status' => $order->status,
+                    'order_details' => $formattedOrderDetails,
+                ];
+            });
+
+            return response()->json(['success' => true, 'data' => $formattedOrders], 200);
+        } catch (\Exception $e) {
+            return response()->json(['error' => $e->getMessage()], 500);
+        }
+    }
 }

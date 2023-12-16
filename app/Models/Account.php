@@ -23,6 +23,8 @@ class Account extends Authenticatable implements JWTSubject
         'role',
         'avatar',
         'created_at',
+        'customer',
+
     ];
 
     // Define the relationship with the Customer model
