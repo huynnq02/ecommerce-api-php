@@ -38,7 +38,7 @@ Route::group(['prefix' => 'auth', 'middleware' => 'api',], function () {
     Route::post('/login', [AuthController::class, 'login'])->withoutmiddleware(['auth']);;
     Route::get('/profile', [AuthController::class, 'me']);
     Route::post('/logout', [AuthController::class, 'logout']);
-    Route::post('/refresh', [AuthController::class, 'refresh']);
+    Route::post('/refresh', [AuthController::class, 'refresh'])->withoutmiddleware(['auth']);
 
     // Route::get('/{id}', [AuthController::class, 'getCustomer']);
     // Route::get('/', [AuthController::class, 'getAllCustomers']);
@@ -66,10 +66,10 @@ route::group(['prefix' => 'products'], function () {
     route::get('/', [productcontroller::class, 'getAllproducts'])->withoutmiddleware(['auth']);;
 
     route::middleware('api')->group(function () {
-        route::post('/', [productcontroller::class, 'createproduct']);
-        route::delete('/{id}', [productcontroller::class, 'deleteproduct']);
-        route::put('/{id}', [productcontroller::class, 'updateproduct']);
-        Route::post('/buy/{id}', [ProductController::class, 'buyProduct']);
+        route::post('/', [productcontroller::class, 'createproduct'])->withoutmiddleware(['auth']);
+        route::delete('/{id}', [productcontroller::class, 'deleteproduct'])->withoutmiddleware(['auth']);
+        route::put('/{id}', [productcontroller::class, 'updateproduct'])->withoutmiddleware(['auth']);
+        Route::post('/buy/{id}', [ProductController::class, 'buyProduct'])->withoutmiddleware(['auth']);
     });
 });
 

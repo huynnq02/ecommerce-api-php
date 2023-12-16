@@ -61,11 +61,11 @@ class AuthController extends Controller
                 return response()->json(['error' => 'User not found'], 404);
             }
             $token = auth('api')->login($user);
-            $refreshToken = generateRefreshToken();
+            // $refreshToken = generateRefreshToken();
 
-            return $this->respondWithToken($token, $refreshToken);
+            return $this->respondWithAccessToken($token);
         } catch (Exception $e) {
-            return response()->json(['error' => 'Refesh Token is invalid'], 401);
+            return response()->json(['error' => 'Refesh Token is invalid'], 403);
         }
     }
 
@@ -74,6 +74,15 @@ class AuthController extends Controller
         return response()->json([
             'access_token' => $token,
             'refresh_token' => $refreshToken,
+            'token_type' => 'bearer',
+            'expires_in' => JWTAuth::factory()->getTTL() * 60,
+        ]);
+    }
+
+    protected function respondWithAccessToken($token)
+    {
+        return response()->json([
+            'access_token' => $token,
             'token_type' => 'bearer',
             'expires_in' => JWTAuth::factory()->getTTL() * 60,
         ]);
