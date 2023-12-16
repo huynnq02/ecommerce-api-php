@@ -18,10 +18,12 @@ class Warehouse extends Model
         'image',
         'location',
         'employee_id',
+        'description',
     ];
     // Cast the 'location' attribute as JSON
     protected $casts = [
         'location' => 'json',
+        'description' => 'string',
     ];
 
     // Define the relationship with the Employee model

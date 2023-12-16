@@ -13,6 +13,8 @@ class CreateWarehousesTable extends Migration
             $table->string('warehouse_name');
             $table->text('image')->nullable();
             $table->json('location');
+            $table->text('description')->nullable(); 
+
             $table->unsignedBigInteger('employee_id');
             $table->timestamps();
             $table->foreign('employee_id')->references('employee_id')->on('employees');
