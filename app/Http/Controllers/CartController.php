@@ -5,6 +5,8 @@ namespace App\Http\Controllers;
 
 use App\Models\Cart;
 use App\Models\CartDetail;
+use App\Models\Discount;
+use App\Models\Product;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
@@ -156,16 +158,137 @@ class CartController extends Controller
                 return response()->json(['success' => false, 'message' => 'Customer not found'], 404);
             }
 
-            $cart = Cart::where('customer_id', $user->customer->customer_id)->with('cartDetails.product')->first();
+            $cart = Cart::where('customer_id', $user->customer->customer_id)->with(['cartDetails.product', 'discount'])->first();
 
             if ($cart) {
+                $discountValue = $cart->discount->discount_value;
                 return response()->json([
                     'success' => true,
-                    'data' => $cart,
+                    'data' => [
+                        'cart' => $cart,
+                        'discount_value' => $discountValue,
+                    ]
                 ], 200);
             } else {
                 return response()->json(['success' => false, 'message' => 'Cart not found'], 404);
             }
+        } catch (\Exception $e) {
+            return response()->json(['error' => $e->getMessage()], 500);
+        }
+    }
+    public function addProductToCart($product_id)
+    {
+        try {
+            $user = auth('api')->user();
+
+
+            if (!$user || !$user->customer) {
+                return response()->json(['success' => false, 'message' => 'Customer not found'], 404);
+            }
+
+            $product = Product::findOrFail($product_id);
+
+
+            if (!$product) {
+                return response()->json(['success' => false, 'message' => 'Product not found'], 404);
+            }
+
+
+            $cart = Cart::where('customer_id', $user->customer->customer_id)->with(['cartDetails.product', 'discount'])->first();
+
+            if (!$cart) {
+                // Nếu giỏ hàng không tồn tại, tạo mới
+                $cart = Cart::create([
+                    'customer_id' => $user->customer->customer_id,
+                    'discount_id' => null,
+                    'total_price' => 0,
+                ]);
+            }
+
+            // Thêm sản phẩm vào giỏ hàng hoặc tăng số lượng nếu đã tồn tại
+            $cartDetail = $cart->cartDetails->where('product_id', $product->product_id)->first();
+
+            if ($cartDetail) {
+                $cartDetail->update(['quantity' => $cartDetail->quantity + 1]);
+            } else {
+                CartDetail::create([
+                    'cart_id' => $cart->cart_id,
+                    'product_id' => $product->product_id,
+                    'quantity' => 1,
+                ]);
+            }
+
+            // Cập nhật lại giá total_price trong giỏ hàng
+            $cart->refresh();
+            $totalPrice = $cart->cartDetails->sum(function ($detail) {
+                return $detail->quantity * $detail->product->price;
+            });
+            $cart->update(['total_price' => $totalPrice]);
+
+            return response()->json([
+                'success' => true,
+                'data' => $cart,
+                'message' => 'Product added to the cart successfully',
+            ], 200);
+        } catch (\Exception $e) {
+            return response()->json(['error' => $e->getMessage()], 500);
+        }
+    }
+
+    public function addDiscountToCart($discountId, $id)
+    {
+        try {
+            $cart = Cart::findOrFail($id);
+            if (!$cart) {
+                return response()->json(['success' => false, 'message' => 'Cart not found'], 404);
+            }
+
+            $discount = Discount::findOrFail($discountId);
+
+            if (!$discount) {
+                return response()->json(['success' => false, 'message' => 'Discount not found'], 404);
+            }
+
+            // Cập nhật discount_id trong giỏ hàng
+            $cart->update(['discount_id' => $discountId]);
+
+            // Trả về thông tin giỏ hàng sau khi thêm discount
+            $cart->refresh();
+            $totalPrice = $cart->cartDetails->sum(function ($detail) {
+                return $detail->quantity * $detail->product->price;
+            });
+            $cart->update(['total_price' => $totalPrice]);
+
+            return response()->json([
+                'success' => true,
+                'data' => $cart,
+                'message' => 'Discount added to the cart successfully',
+            ], 200);
+        } catch (\Illuminate\Database\Eloquent\ModelNotFoundException $e) {
+            return response()->json(['success' => false, 'message' => 'Cart or Discount not found'], 404);
+        } catch (\Exception $e) {
+            return response()->json(['error' => $e->getMessage()], 500);
+        }
+    }
+    public function removeDiscountFromCart($id)
+    {
+        try {
+            $cart = Cart::findOrFail($id);
+
+            if ($cart->discount_id) {
+                $cart->update(['discount_id' => null]);
+                $cart->refresh(); // Refresh the model to get the updated data
+
+                return response()->json([
+                    'success' => true,
+                    'data' => $cart,
+                    'message' => 'Discount removed from the cart successfully',
+                ], 200);
+            } else {
+                return response()->json(['success' => false, 'message' => 'No discount found in the cart'], 404);
+            }
+        } catch (\Illuminate\Database\Eloquent\ModelNotFoundException $e) {
+            return response()->json(['success' => false, 'message' => 'Cart not found'], 404);
         } catch (\Exception $e) {
             return response()->json(['error' => $e->getMessage()], 500);
         }
