@@ -25,6 +25,7 @@ class WarehouseFactory extends Factory
                 'city' => $this->faker->city,
                 'latitude' => $this->faker->latitude,
                 'longitude' => $this->faker->longitude,
+                'description' => $this->faker->sentence,
             ],
             'employee_id' => $employee->employee_id,
         ];
