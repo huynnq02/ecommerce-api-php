@@ -58,7 +58,7 @@ class OrderController extends Controller
     public function getOrder($id)
     {
         try {
-            $order = Order::with('orderDetails.product','customer.account')->findOrFail($id);
+            $order = Order::with('orderDetails.product', 'customer.account')->findOrFail($id);
             return response()->json(['success' => true, 'data' => $order], 200);
         } catch (\Exception $e) {
             return response()->json(['error' => $e->getMessage()], 404);
@@ -149,6 +149,94 @@ class OrderController extends Controller
             return response()->json(['success' => true, 'message' => $data], 200);
 
             // response as response
+        } catch (\Exception $e) {
+            return response()->json(['error' => $e->getMessage()], 500);
+        }
+    }
+    public function getCustomerOrderHistory()
+    {
+        try {
+            $user = auth('api')->user();
+
+            if (!$user || !$user->customer) {
+                return response()->json(['success' => false, 'message' => 'Customer not found'], 404);
+            }
+
+            $orders = Order::where('customer_id', $user->customer->customer_id)
+                ->with('orderDetails.product')
+                ->get();
+
+            $formattedOrders = $orders->map(function ($order) {
+                $formattedOrderDetails = $order->orderDetails->map(function ($orderDetail) {
+                    return [
+                        'product_id' => $orderDetail->product_id,
+                        'quantity' => $orderDetail->quantity,
+                        'product' => $orderDetail->product,
+                    ];
+                });
+
+                return [
+                    'order_id' => $order->order_id,
+                    'total_price' => $order->total_price,
+                    'payment_method' => $order->payment_method,
+                    'destination' => $order->destination,
+                    'date' => $order->date,
+                    'status' => $order->status,
+                    'order_details' => $formattedOrderDetails,
+                ];
+            });
+
+            return response()->json(['success' => true, 'data' => $formattedOrders], 200);
+        } catch (\Exception $e) {
+            return response()->json(['error' => $e->getMessage()], 500);
+        }
+    }
+
+    public function searchOrder(Request $request)
+    {
+        try {
+            $perPage = $request->input('per_page', PaginationConstants::DEFAULT_PER_PAGE);
+            $page = $request->input('page', PaginationConstants::DEFAULT_PAGE);
+
+            $orderId = $request->input('order_id');
+            $customerId = $request->input('customer_id');
+
+            $query = Order::with('orderDetails.product');
+
+            if ($orderId) {
+                // Search by order ID
+                $order = $query->findOrFail($orderId);
+                return response()->json(['success' => true, 'data' => $order], 200);
+            }
+
+            if ($customerId) {
+                // Search by customer ID
+                $orders = $query->where('customer_id', $customerId)->paginate($perPage, ['*'], 'page', $page);
+
+                if ($orders->isEmpty()) {
+                    return response()->json(['success' => false, 'message' => 'Orders not found for the customer'], 404);
+                }
+
+                $paginator = new LengthAwarePaginator(
+                    $orders->items(),
+                    $orders->total(),
+                    $orders->perPage(),
+                    $orders->currentPage(),
+                    ['path' => $request->url(), 'query' => $request->query()]
+                );
+
+                return response()->json([
+                    'success' => true,
+                    'data' => $paginator->items(),
+                    'pagination' => [
+                        'current_page' => $paginator->currentPage(),
+                        'last_page' => $paginator->lastPage(),
+                        'total' => $paginator->total(),
+                    ],
+                ], 200);
+            }
+
+            return response()->json(['success' => false, 'message' => 'Invalid search criteria'], 400);
         } catch (\Exception $e) {
             return response()->json(['error' => $e->getMessage()], 500);
         }

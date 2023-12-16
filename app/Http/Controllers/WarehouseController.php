@@ -28,6 +28,8 @@ class WarehouseController extends Controller
                 'image' => $request->input('image'),
                 'location' => $locationWithLatLon,
                 'employee_id' => $request->input('employee_id'),
+                'description' => $request->input('description'),
+
             ]);
 
             $warehouseDetails = $request->input('warehouse_details');
@@ -72,6 +74,7 @@ class WarehouseController extends Controller
                 'image' => $request->input('image'),
                 'location' => $request->input('location'),
                 'employee_id' => $request->input('employee_id'),
+                'description' => $request->input('description'),
             ]);
 
             // Update warehouse details if present in the request
