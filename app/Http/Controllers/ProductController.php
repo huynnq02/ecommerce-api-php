@@ -141,4 +141,25 @@ class ProductController extends Controller
             return response()->json(['success' => false, 'error' => $e->getMessage()], 400);
         }
     }
+    public function searchProduct(Request $request)
+    {
+        try {
+            $productName = $request->input('product_name');
+
+            $products = Product::with('category')
+                ->where('name', 'like', '%' . $productName . '%')
+                ->get();
+
+            if ($products->isEmpty()) {
+                return response()->json(['success' => false, 'message' => 'Product not found'], 404);
+            }
+
+            return response()->json([
+                'success' => true,
+                'data' => $products
+            ], 200);
+        } catch (\Exception $e) {
+            return response()->json(['success' => false, 'error' => $e->getMessage()], 500);
+        }
+    }
 }
