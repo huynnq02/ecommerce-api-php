@@ -161,14 +161,13 @@ class CartController extends Controller
             $cart = Cart::where('customer_id', $user->customer->customer_id)->with(['cartDetails.product', 'discount'])->first();
 
             if ($cart) {
-                $discountValue = $cart->discount->discount_value;
-                return response()->json([
-                    'success' => true,
-                    'data' => [
-                        'cart' => $cart,
-                        'discount_value' => $discountValue,
-                    ]
-                ], 200);
+                $response = ['success' => true, 'data' => ['cart' => $cart]];
+
+                if ($cart->discount) {
+                    $response['data']['discount_value'] = $cart->discount->discount_value;
+                }
+
+                return response()->json($response, 200);
             } else {
                 return response()->json(['success' => false, 'message' => 'Cart not found'], 404);
             }
