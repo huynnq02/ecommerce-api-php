@@ -58,7 +58,7 @@ class OrderController extends Controller
     public function getOrder($id)
     {
         try {
-            $order = Order::with('orderDetails.product','customer.account')->findOrFail($id);
+            $order = Order::with('orderDetails.product', 'customer.account')->findOrFail($id);
             return response()->json(['success' => true, 'data' => $order], 200);
         } catch (\Exception $e) {
             return response()->json(['error' => $e->getMessage()], 404);
@@ -187,6 +187,56 @@ class OrderController extends Controller
             });
 
             return response()->json(['success' => true, 'data' => $formattedOrders], 200);
+        } catch (\Exception $e) {
+            return response()->json(['error' => $e->getMessage()], 500);
+        }
+    }
+
+    public function searchOrder(Request $request)
+    {
+        try {
+            $perPage = $request->input('per_page', PaginationConstants::DEFAULT_PER_PAGE);
+            $page = $request->input('page', PaginationConstants::DEFAULT_PAGE);
+
+            $orderId = $request->input('order_id');
+            $customerId = $request->input('customer_id');
+
+            $query = Order::with('orderDetails.product');
+
+            if ($orderId) {
+                // Search by order ID
+                $order = $query->findOrFail($orderId);
+                return response()->json(['success' => true, 'data' => $order], 200);
+            }
+
+            if ($customerId) {
+                // Search by customer ID
+                $orders = $query->where('customer_id', $customerId)->paginate($perPage, ['*'], 'page', $page);
+
+                if ($orders->isEmpty()) {
+                    return response()->json(['success' => false, 'message' => 'Orders not found for the customer'], 404);
+                }
+
+                $paginator = new LengthAwarePaginator(
+                    $orders->items(),
+                    $orders->total(),
+                    $orders->perPage(),
+                    $orders->currentPage(),
+                    ['path' => $request->url(), 'query' => $request->query()]
+                );
+
+                return response()->json([
+                    'success' => true,
+                    'data' => $paginator->items(),
+                    'pagination' => [
+                        'current_page' => $paginator->currentPage(),
+                        'last_page' => $paginator->lastPage(),
+                        'total' => $paginator->total(),
+                    ],
+                ], 200);
+            }
+
+            return response()->json(['success' => false, 'message' => 'Invalid search criteria'], 400);
         } catch (\Exception $e) {
             return response()->json(['error' => $e->getMessage()], 500);
         }
