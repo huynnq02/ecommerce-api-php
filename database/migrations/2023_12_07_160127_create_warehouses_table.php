@@ -10,14 +10,12 @@ class CreateWarehousesTable extends Migration
     {
         Schema::create('warehouses', function (Blueprint $table) {
             $table->id('warehouse_id');
-            $table->date('date');
-            $table->float('total_price');
+            $table->string('warehouse_name');
+            $table->text('image')->nullable();
+            $table->json('location');
             $table->unsignedBigInteger('employee_id');
-            $table->unsignedBigInteger('supplier_id');
             $table->timestamps();
-
             $table->foreign('employee_id')->references('employee_id')->on('employees');
-            $table->foreign('supplier_id')->references('supplier_id')->on('suppliers');
         });
     }
 

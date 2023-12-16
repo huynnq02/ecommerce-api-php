@@ -2,13 +2,20 @@
 
 namespace App\Http\Controllers;
 
+use App\Helpers\getCoordinatesHelper;
 use App\Models\Order;
 use App\Models\Product;
 use App\Models\OrderDetail;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Http;
 use App\Constants\PaginationConstants;
+use Illuminate\Http\Client\RequestException;
 use Illuminate\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Facades\DB;
+
+use function App\Helpers\getCoordinates;
+use function App\Helpers\getCoordinatesHelper;
 
 class OrderController extends Controller
 {
@@ -51,7 +58,7 @@ class OrderController extends Controller
     public function getOrder($id)
     {
         try {
-            $order = Order::with('orderDetails.product')->findOrFail($id);
+            $order = Order::with('orderDetails.product','customer.account')->findOrFail($id);
             return response()->json(['success' => true, 'data' => $order], 200);
         } catch (\Exception $e) {
             return response()->json(['error' => $e->getMessage()], 404);
@@ -128,6 +135,60 @@ class OrderController extends Controller
             return response()->json(['success' => true, 'message' => 'Order deleted successfully'], 200);
         } catch (\Exception $e) {
             return response()->json(['error' => $e->getMessage()], 404);
+        }
+    }
+    // Get latitude and longitude for a destination with nested JSON structure
+    public function getCoordinates(Request $request)
+    {
+        try {
+            $location = $request->input('location');
+            Log::info("oke");
+            $data = getCoordinatesHelper($location);
+            Log::info("oke1");
+
+            return response()->json(['success' => true, 'message' => $data], 200);
+
+            // response as response
+        } catch (\Exception $e) {
+            return response()->json(['error' => $e->getMessage()], 500);
+        }
+    }
+    public function getCustomerOrderHistory()
+    {
+        try {
+            $user = auth('api')->user();
+
+            if (!$user || !$user->customer) {
+                return response()->json(['success' => false, 'message' => 'Customer not found'], 404);
+            }
+
+            $orders = Order::where('customer_id', $user->customer->customer_id)
+                ->with('orderDetails.product')
+                ->get();
+
+            $formattedOrders = $orders->map(function ($order) {
+                $formattedOrderDetails = $order->orderDetails->map(function ($orderDetail) {
+                    return [
+                        'product_id' => $orderDetail->product_id,
+                        'quantity' => $orderDetail->quantity,
+                        'product' => $orderDetail->product,
+                    ];
+                });
+
+                return [
+                    'order_id' => $order->order_id,
+                    'total_price' => $order->total_price,
+                    'payment_method' => $order->payment_method,
+                    'destination' => $order->destination,
+                    'date' => $order->date,
+                    'status' => $order->status,
+                    'order_details' => $formattedOrderDetails,
+                ];
+            });
+
+            return response()->json(['success' => true, 'data' => $formattedOrders], 200);
+        } catch (\Exception $e) {
+            return response()->json(['error' => $e->getMessage()], 500);
         }
     }
 }

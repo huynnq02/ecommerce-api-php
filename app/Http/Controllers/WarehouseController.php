@@ -2,22 +2,42 @@
 
 namespace App\Http\Controllers;
 
-use Illuminate\Http\Request;
 use App\Models\Warehouse;
+use Illuminate\Http\Request;
 use App\Models\WarehouseDetail;
-use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
+
+use App\Helpers\getCoordinatesHelper;
+use function App\Helpers\getCoordinatesHelper;
 
 class WarehouseController extends Controller
 {
     public function createWarehouse(Request $request)
     {
         try {
-            $result = DB::transaction(function () use ($request) {
-                $warehouse = Warehouse::create([
-                    'warehouse_name' => $request->input('warehouse_name'),
-                    'image' => $request->input('image'),
-                    'location' => $request->input('location'),
-                    'employee_id' => $request->input('employee_id'),
+            Log::info("1");
+            $data = getCoordinatesHelper($request->input('location'));
+
+            // Add latitude and longitude to the existing location array
+            $locationWithLatLon = array_merge($request->input('location'), ['lat' => $data[0], 'lon' => $data[1]]);
+            Log::info("2");
+            Log::info($locationWithLatLon);
+
+            $warehouse = Warehouse::create([
+                'warehouse_name' => $request->input('warehouse_name'),
+                'image' => $request->input('image'),
+                'location' => $locationWithLatLon,
+                'employee_id' => $request->input('employee_id'),
+            ]);
+
+            $warehouseDetails = $request->input('warehouse_details');
+
+            foreach ($warehouseDetails as $detail) {
+                WarehouseDetail::create([
+                    'warehouse_id' => $warehouse->warehouse_id,
+                    'product_id' => $detail['product_id'],
+                    'quantity' => $detail['quantity'],
+                    'unit' => $detail['unit'],
                 ]);
 
                 $warehouseDetails = $request->input('warehouse_details');
@@ -33,10 +53,10 @@ class WarehouseController extends Controller
 
                 // Return both $warehouse and $warehouseDetails
                 return ['warehouse' => $warehouse, 'warehouseDetails' => $warehouseDetails];
-            });
+            }
 
             // Access $warehouse and $warehouseDetails outside the closure
-            return response()->json(['success' => true, 'data' => $result], 201);
+            return response()->json(['success' => true, 'data' => ['warehouse' => $warehouse, 'warehouseDetails' => $warehouseDetails]], 201);
         } catch (\Exception $e) {
             return response()->json(['error' => $e->getMessage()], 400);
         }

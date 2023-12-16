@@ -15,16 +15,18 @@ class WarehouseFactory extends Factory
 
     public function definition()
     {
-        $employee = Employee::inRandomOrder()->firstOrFail(); 
-        $supplier = Supplier::inRandomOrder()->firstOrFail(); 
+        $employee = Employee::inRandomOrder()->firstOrFail();
 
         return [
-            'date' => $this->faker->date,
-            // 'total_price' => $this->faker->randomFloat(2, 100, 1000),
-            'total_price' => 0,
-
+            'warehouse_name' => $this->faker->company,
+            'image' => $this->faker->imageUrl(),
+            'location' => [
+                'street' => $this->faker->streetAddress,
+                'city' => $this->faker->city,
+                'latitude' => $this->faker->latitude,
+                'longitude' => $this->faker->longitude,
+            ],
             'employee_id' => $employee->employee_id,
-            'supplier_id' => $supplier->supplier_id,
         ];
     }
 
@@ -34,14 +36,6 @@ class WarehouseFactory extends Factory
             WarehouseDetail::factory()
                 ->for($warehouse)
                 ->create(['product_id' => Product::inRandomOrder()->firstOrFail()->product_id, 'warehouse_id' => $warehouse->warehouse_id]);
-            $totalPrice = $warehouse->warehouseDetails->sum(function (WarehouseDetail $warehouseDetail) {
-                $product = Product::findOrFail($warehouseDetail->product_id);
-                return $product ? $warehouseDetail->quantity * $product->price : 0;
-            });
-
-            $warehouse->update([
-                'total_price' => $totalPrice,
-            ]);
         });
     }
 }

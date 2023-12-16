@@ -13,10 +13,9 @@ class CreateWarehouseDetailsTable extends Migration
             $table->unsignedBigInteger('product_id');
             $table->integer('quantity');
             $table->string('unit', 100);
-            $table->timestamps();
-
-            $table->foreign('warehouse_id')->references('warehouse_id')->on('warehouses');
-            $table->foreign('product_id')->references('product_id')->on('products');
+            $table->foreign('warehouse_id')->references('warehouse_id')->on('warehouses')->onDelete('cascade');
+            $table->foreign('product_id')->references('product_id')->on('products')->onDelete('cascade');
+            $table->timestamps(); 
         });
     }
 
