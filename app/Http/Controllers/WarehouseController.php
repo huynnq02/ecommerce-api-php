@@ -17,12 +17,15 @@ class WarehouseController extends Controller
         try {
             Log::info("1");
             $data = getCoordinatesHelper($request->input('location'));
-
-            // Add latitude and longitude to the existing location array
-            $locationWithLatLon = array_merge($request->input('location'), ['lat' => $data[0], 'lon' => $data[1]]);
-            Log::info("2");
-            Log::info($locationWithLatLon);
-
+            Log::info("kkk");
+            $locationWithLatLon = $request->input('location');
+            Log::info($data);
+            if ($data) {
+                // Add latitude and longitude to the existing location array
+                $locationWithLatLon = array_merge($request->input('location'), ['lat' => $data[0], 'lon' => $data[1]]);
+                Log::info("2");
+                Log::info($locationWithLatLon);
+            }
             $warehouse = Warehouse::create([
                 'warehouse_name' => $request->input('warehouse_name'),
                 'image' => $request->input('image'),
