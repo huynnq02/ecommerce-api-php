@@ -162,4 +162,47 @@ class ProductController extends Controller
             return response()->json(['success' => false, 'error' => $e->getMessage()], 500);
         }
     }
+
+    //lấy 8 sản phẩm bán chạy nhất
+    public function getTopSellingProducts()
+    {
+        try {
+
+            $topSellingProducts = DB::table('products')
+                ->join('order_details', 'products.product_id', '=', 'order_details.product_id')
+                ->join('orders', 'order_details.order_id', '=', 'orders.order_id')
+                ->select('products.*', DB::raw('SUM(order_details.quantity) as total_quantity_sold'))
+                ->groupBy('products.product_id')
+                ->orderByDesc('total_quantity_sold')
+                ->limit(8)
+                ->get();
+
+            return response()->json([
+                'success' => true,
+                'data' => $topSellingProducts
+            ], 200);
+        } catch (\Exception $e) {
+            return response()->json(['success' => false, 'error' => $e->getMessage()], 500);
+        }
+    }
+    public function getTopRatedProducts()
+    {
+        try {
+
+            $topRatedProducts = DB::table('products')
+                ->join('reviews', 'products.product_id', '=', 'reviews.product_id')
+                ->select('products.*', DB::raw('AVG(reviews.star) as average_rating'))
+                ->groupBy('products.product_id')
+                ->orderByDesc('average_rating')
+                ->limit(9)
+                ->get();
+
+            return response()->json([
+                'success' => true,
+                'data' => $topRatedProducts
+            ], 200);
+        } catch (\Exception $e) {
+            return response()->json(['success' => false, 'error' => $e->getMessage()], 500);
+        }
+    }
 }

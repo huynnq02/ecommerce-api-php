@@ -49,7 +49,7 @@ Route::group(['prefix' => 'auth', 'middleware' => 'api',], function () {
 
 Route::group(['prefix' => 'customers', 'middleware' => 'api',], function () {
 
-    Route::post('/', [CustomerController::class, 'createCustomer'])->withoutmiddleware(['auth']);;
+    Route::post('/', [CustomerController::class, 'createCustomer'])->withoutmiddleware(['auth']);
     Route::get('/{id}', [CustomerController::class, 'getCustomer']);
     Route::get('/', [CustomerController::class, 'getAllCustomers']);
     Route::delete('/{id}', [CustomerController::class, 'deleteCustomer']);
@@ -62,8 +62,11 @@ Route::group(['prefix' => 'customers', 'middleware' => 'api',], function () {
 });
 
 route::group(['prefix' => 'products'], function () {
-    route::get('/{id}', [productcontroller::class, 'getproduct'])->withoutmiddleware(['auth']);;
-    route::get('/', [productcontroller::class, 'getAllproducts'])->withoutmiddleware(['auth']);;
+    route::get('/{id}', [productcontroller::class, 'getproduct'])->withoutmiddleware(['auth']);
+    route::get('/', [productcontroller::class, 'getAllproducts'])->withoutmiddleware(['auth']);
+    route::get('/searchProducts', [productcontroller::class, 'searchProduct'])->withoutmiddleware(['auth']);
+    route::get('/bestSellProducts', [productcontroller::class, 'getTopSellingProducts'])->withoutmiddleware(['auth']);
+    route::get('/topRateProducts', [productcontroller::class, 'getTopRatedProducts'])->withoutmiddleware(['auth']);
 
     route::middleware('api')->group(function () {
         route::post('/', [productcontroller::class, 'createproduct'])->withoutmiddleware(['auth']);
@@ -110,6 +113,9 @@ Route::group(['prefix' => 'carts', 'middleware' => 'api',], function () {
     Route::delete('/{id}', [CartController::class, 'deleteCart']);
     Route::delete('/{id}/products/{product_id}', [CartController::class, 'deleteProductFromCart']);
     Route::get('/cart', [CartController::class, 'viewCart']);
+    Route::post('/addProduct', [CartController::class, 'addProductToCart']);
+    Route::post('/{id}/addDiscount/{discountId}', [CartController::class, 'addDiscountToCart']);
+    Route::delete('discount/{id}', [CartController::class, 'removeDiscountFromCart']);
 });
 
 Route::group(['prefix' => 'employees', 'middleware' => 'api',], function () {
@@ -162,6 +168,7 @@ Route::group([
     Route::put('/{id}', [OrderController::class, 'updateOrder']);
     Route::post('/get-coordinates', [OrderController::class, 'getCoordinates'])->withoutmiddleware(['auth']);;
     Route::get('/order/customer-history', [OrderController::class, 'getCustomerOrderHistory']);
+    Route::get('/order/searchOrders', [OrderController::class, 'searchOrder']);
 });
 
 Route::group(['prefix' => 'supplier', 'middleware' => 'api',], function () {
