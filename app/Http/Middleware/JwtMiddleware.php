@@ -33,7 +33,7 @@ class JwtMiddleware extends BaseMiddleware
                     $request->headers->set('Authorization', 'Bearer ' . $refreshed);
                 } catch (JWTException $e) {
                     return response()->json([
-                        'code'   => 103,
+                        'code'   => 403,
                         'message' => 'Token cannot be refreshed, please Login again'
                     ]);
                 }
