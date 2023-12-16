@@ -175,7 +175,7 @@ class CartController extends Controller
             return response()->json(['error' => $e->getMessage()], 500);
         }
     }
-    public function addProductToCart($product_id)
+    public function addProductToCart($id)
     {
         try {
             $user = auth('api')->user();
@@ -185,7 +185,7 @@ class CartController extends Controller
                 return response()->json(['success' => false, 'message' => 'Customer not found'], 404);
             }
 
-            $product = Product::findOrFail($product_id);
+            $product = Product::findOrFail($id);
 
 
             if (!$product) {

@@ -67,6 +67,8 @@ route::group(['prefix' => 'products'], function () {
     route::get('/searchProducts', [productcontroller::class, 'searchProduct'])->withoutmiddleware(['auth']);
     route::get('/bestSellProducts', [productcontroller::class, 'getTopSellingProducts'])->withoutmiddleware(['auth']);
     route::get('/topRateProducts', [productcontroller::class, 'getTopRatedProducts'])->withoutmiddleware(['auth']);
+    route::get('/similarProduct/{id}', [productcontroller::class, 'getSimilarProducts'])->withoutmiddleware(['auth']);
+    route::get('/recentProduct', [productcontroller::class, 'getRecentlyCreatedProducts'])->withoutmiddleware(['auth']);
 
     route::middleware('api')->group(function () {
         route::post('/', [productcontroller::class, 'createproduct'])->withoutmiddleware(['auth']);
@@ -113,7 +115,7 @@ Route::group(['prefix' => 'carts', 'middleware' => 'api',], function () {
     Route::delete('/{id}', [CartController::class, 'deleteCart']);
     Route::delete('/{id}/products/{product_id}', [CartController::class, 'deleteProductFromCart']);
     Route::get('/cart', [CartController::class, 'viewCart']);
-    Route::post('/addProduct', [CartController::class, 'addProductToCart']);
+    Route::post('/addProduct/{id}', [CartController::class, 'addProductToCart']);
     Route::post('/{id}/addDiscount/{discountId}', [CartController::class, 'addDiscountToCart']);
     Route::delete('discount/{id}', [CartController::class, 'removeDiscountFromCart']);
 });
