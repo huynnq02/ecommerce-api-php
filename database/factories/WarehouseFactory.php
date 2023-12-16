@@ -21,6 +21,8 @@ class WarehouseFactory extends Factory
             'warehouse_name' => $this->faker->company,
             'image' => $this->faker->imageUrl(),
             'location' => [
+                'street' => $this->faker->streetAddress,
+                'city' => $this->faker->city,
                 'latitude' => $this->faker->latitude,
                 'longitude' => $this->faker->longitude,
             ],

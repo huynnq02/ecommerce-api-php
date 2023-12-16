@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Cart;
 use App\Models\Order;
 use App\Models\Review;
 use App\Models\Account;
@@ -9,9 +10,9 @@ use App\Models\Inquiry;
 use App\Models\Invoice;
 use App\Models\Customer;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use App\Constants\PaginationConstants;
 use Illuminate\Pagination\LengthAwarePaginator;
-use Illuminate\Support\Facades\DB;
 
 class CustomerController extends Controller
 {
@@ -43,7 +44,11 @@ class CustomerController extends Controller
                     'birthday' => $request->input('birthday'),
                     'address' => $request->input('address'),
                 ]);
-
+                $cart = Cart::create([
+                    'customer_id' => $customer->customer_id,
+                    'discount_id' => null, 
+                    'total_price' => 0, 
+                ]);
                 // Return both $account and $customer
                 return ['account' => $account, 'customer' => $customer];
             });
