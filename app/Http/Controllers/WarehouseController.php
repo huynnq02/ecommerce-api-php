@@ -111,7 +111,7 @@ class WarehouseController extends Controller
     {
         try {
             // Lấy thông tin kho cùng với chi tiết kho liên quan từ cơ sở dữ liệu
-            $warehouse = Warehouse::with('warehouseDetails.product')->findOrFail($id);
+            $warehouse = Warehouse::with('warehouseDetails.product',"employee")->findOrFail($id);
             return response()->json(['success' => true, 'data' => $warehouse], 200);
         } catch (\Exception $e) {
             return response()->json(['error' => $e->getMessage()], 404);
