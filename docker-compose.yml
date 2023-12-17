@@ -3,7 +3,7 @@ services:
   laravel-docker:
     container_name: laravel-docker
     build: .
-    dockerfile: Dockerfile
+    # dockerfile: Dockerfile
     volumes:
       - ./app:/var/www/html
     ports:
@@ -15,7 +15,7 @@ services:
       MYSQL_ROOT_PASSWORD: 210802
       MYSQL_DATABASE: limo
     ports:
-    - 3306:3306
+    - 3307:3306
   
   phpmyadmin:
     image: phpmyadmin:latest
