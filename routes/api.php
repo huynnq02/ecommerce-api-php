@@ -170,9 +170,10 @@ Route::group([
     Route::delete('/{id}', [OrderController::class, 'deleteOrder']);
     Route::put('/{id}', [OrderController::class, 'updateOrder']);
 
-    Route::post('/get-coordinates', [OrderController::class, 'getCoordinates'])->withoutmiddleware(['auth']);;
-    Route::get('/order/customer-history', [OrderController::class, 'getCustomerOrderHistory']);
-    Route::get('/order/searchOrders', [OrderController::class, 'searchOrder']);
+    Route::post('/get-coordinates', [OrderController::class, 'getCoordinates'])->withoutmiddleware(['auth']);
+    Route::get('/order/customer-history', [OrderController::class, 'getCustomerOrderHistory'])->withoutmiddleware(['auth']);
+    Route::get('/order/search', [OrderController::class, 'searchOrder'])->withoutmiddleware(['auth']);
+    Route::get('/order/status/{status}', [OrderController::class, 'searchOrderByStatus'])->withoutmiddleware(['auth']);
 });
 
 Route::group(['prefix' => 'supplier', 'middleware' => 'api',], function () {

@@ -12,10 +12,11 @@ use Illuminate\Support\Facades\Http;
 use App\Constants\PaginationConstants;
 use Illuminate\Http\Client\RequestException;
 use Illuminate\Pagination\LengthAwarePaginator;
-use Illuminate\Support\Facades\DB;
+
 
 use function App\Helpers\getCoordinates;
 use function App\Helpers\getCoordinatesHelper;
+use Illuminate\Support\Facades\DB;
 
 class OrderController extends Controller
 {
@@ -192,51 +193,87 @@ class OrderController extends Controller
         }
     }
 
+
+
+    // ...
+
     public function searchOrder(Request $request)
     {
         try {
             $perPage = $request->input('per_page', PaginationConstants::DEFAULT_PER_PAGE);
             $page = $request->input('page', PaginationConstants::DEFAULT_PAGE);
 
-            $orderId = $request->input('order_id');
-            $customerId = $request->input('customer_id');
+            $keyword = $request->query('keyword');
 
-            $query = Order::with('orderDetails.product');
+            $orders = Order::with(['orderDetails.product', 'customer'])
+                ->where(function ($query) use ($keyword) {
+                    $query->where('order_id', 'like', '%' . $keyword . '%')
+                        ->orWhere('customer_id', 'like', '%' . $keyword . '%');
+                })
+                ->paginate($perPage, ['*'], 'page', $page);
 
-            if ($orderId) {
-                // Search by order ID
-                $order = $query->findOrFail($orderId);
-                return response()->json(['success' => true, 'data' => $order], 200);
+            if ($orders->isEmpty()) {
+                return response()->json(['success' => false, 'message' => 'Orders not found for the keyword'], 404);
             }
 
-            if ($customerId) {
-                // Search by customer ID
-                $orders = $query->where('customer_id', $customerId)->paginate($perPage, ['*'], 'page', $page);
+            $paginator = new LengthAwarePaginator(
+                $orders->items(),
+                $orders->total(),
+                $orders->perPage(),
+                $orders->currentPage(),
+                ['path' => $request->url(), 'query' => $request->query()]
+            );
 
-                if ($orders->isEmpty()) {
-                    return response()->json(['success' => false, 'message' => 'Orders not found for the customer'], 404);
-                }
+            return response()->json([
+                'success' => true,
+                'data' => $paginator->items(),
+                'pagination' => [
+                    'current_page' => $paginator->currentPage(),
+                    'last_page' => $paginator->lastPage(),
+                    'total' => $paginator->total(),
+                ],
+            ], 200);
+        } catch (\Exception $e) {
+            return response()->json(['error' => $e->getMessage()], 500);
+        }
+    }
 
-                $paginator = new LengthAwarePaginator(
-                    $orders->items(),
-                    $orders->total(),
-                    $orders->perPage(),
-                    $orders->currentPage(),
-                    ['path' => $request->url(), 'query' => $request->query()]
-                );
+    public function searchOrderByStatus(Request $request, $status)
+    {
+        try {
+            $perPage = $request->input('per_page', PaginationConstants::DEFAULT_PER_PAGE);
+            $page = $request->input('page', PaginationConstants::DEFAULT_PAGE);
 
-                return response()->json([
-                    'success' => true,
-                    'data' => $paginator->items(),
-                    'pagination' => [
-                        'current_page' => $paginator->currentPage(),
-                        'last_page' => $paginator->lastPage(),
-                        'total' => $paginator->total(),
-                    ],
-                ], 200);
+
+            if (!in_array($status, Order::VALID_STATUSES)) {
+                return response()->json(['success' => false, 'message' => 'Invalid status value'], 400);
             }
 
-            return response()->json(['success' => false, 'message' => 'Invalid search criteria'], 400);
+            $orders = Order::with(['orderDetails.product', 'customer'])
+                ->where('status', $status)
+                ->paginate($perPage, ['*'], 'page', $page);
+
+            if ($orders->isEmpty()) {
+                return response()->json(['success' => false, 'message' => 'Orders not found for the status'], 404);
+            }
+
+            $paginator = new LengthAwarePaginator(
+                $orders->items(),
+                $orders->total(),
+                $orders->perPage(),
+                $orders->currentPage(),
+                ['path' => $request->url(), 'query' => $request->query()]
+            );
+
+            return response()->json([
+                'success' => true,
+                'data' => $paginator->items(),
+                'pagination' => [
+                    'current_page' => $paginator->currentPage(),
+                    'last_page' => $paginator->lastPage(),
+                    'total' => $paginator->total(),
+                ],
+            ], 200);
         } catch (\Exception $e) {
             return response()->json(['error' => $e->getMessage()], 500);
         }
