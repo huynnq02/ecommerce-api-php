@@ -169,10 +169,12 @@ Route::group([
     Route::get('/', [OrderController::class, 'getAllOrders'])->withoutmiddleware(['auth']);
     Route::delete('/{id}', [OrderController::class, 'deleteOrder']);
     Route::put('/{id}', [OrderController::class, 'updateOrder']);
+    Route::post('/update-status/{id}', [OrderController::class, 'updateOrderStatus'])->withoutmiddleware(['auth']);
 
     Route::post('/get-coordinates', [OrderController::class, 'getCoordinates'])->withoutmiddleware(['auth']);;
     Route::get('/order/customer-history', [OrderController::class, 'getCustomerOrderHistory']);
     Route::get('/order/searchOrders', [OrderController::class, 'searchOrder']);
+    
 });
 
 Route::group(['prefix' => 'supplier', 'middleware' => 'api',], function () {

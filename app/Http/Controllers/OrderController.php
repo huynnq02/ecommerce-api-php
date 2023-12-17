@@ -123,7 +123,29 @@ class OrderController extends Controller
             return response()->json(['error' => $e->getMessage()], 404);
         }
     }
+    public function updateOrderStatus(Request $request, $id)
+    {
+        try {
+            $order = Order::findOrFail($id);
+        
+            $newStatus = $request->input('status');
+        
+            $allowedStatuses = ['Processing', 'Shipping', 'Complete', 'Cancel'];
+        
+            if (!in_array($newStatus, $allowedStatuses)) {
+                return response()->json(['error' => 'Invalid status value.'], 422);
+            }
+        
+            $order->update([
+                'status' => $newStatus,
+            ]);
+        
+            return response()->json(['success' => true, 'data' => $order, 'message' => 'Order updated successfully'], 200);
+        } catch (\Exception $e) {
+            return response()->json(['error' => $e->getMessage()], 404);
+        }
 
+    }
     // Delete a specific order by ID
     public function deleteOrder($id)
     {
