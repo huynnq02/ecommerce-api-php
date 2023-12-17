@@ -15,6 +15,7 @@ class CreateProductsTable extends Migration
             $table->float('price', 8, 2);
             $table->string('description', 255);
             $table->string('image', 255);
+            $table->json('detail_images')->nullable();
             $table->integer('amount');
             $table->float('rating_average', 8, 2);
             $table->json('specifications');
