@@ -178,6 +178,7 @@ Route::group([
     Route::get('/order/revenueMonth', [OrderController::class, 'getMonthlyRevenue'])->withoutmiddleware(['auth']);
     Route::get('/order/totalOrderInMonth', [OrderController::class, 'getTotalOrdersInMonth'])->withoutmiddleware(['auth']);
     Route::get('/order/monthRevenue', [OrderController::class, 'getMonthlyRevenueArray'])->withoutmiddleware(['auth']);
+    Route::get('/order/latestOrder', [OrderController::class, 'getLatestOrders'])->withoutmiddleware(['auth']);
 });
 
 Route::group(['prefix' => 'supplier', 'middleware' => 'api',], function () {
