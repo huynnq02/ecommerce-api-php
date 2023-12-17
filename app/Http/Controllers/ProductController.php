@@ -163,18 +163,16 @@ class ProductController extends Controller
         }
     }
 
-    //lấy 8 sản phẩm bán chạy nhất
     public function getTopSellingProducts()
     {
         try {
 
-            $topSellingProducts = DB::table('products')
+            $topSellingProducts = Product::select('products.*')
                 ->join('order_details', 'products.product_id', '=', 'order_details.product_id')
-                ->join('orders', 'order_details.order_id', '=', 'orders.order_id')
-                ->select('products.*', DB::raw('SUM(order_details.quantity) as total_quantity_sold'))
+                ->selectRaw('SUM(order_details.quantity) as total_sold')
                 ->groupBy('products.product_id')
-                ->orderByDesc('total_quantity_sold')
-                ->limit(8)
+                ->orderByDesc('total_sold')
+                ->take(8)
                 ->get();
 
             return response()->json([
@@ -185,6 +183,8 @@ class ProductController extends Controller
             return response()->json(['success' => false, 'error' => $e->getMessage()], 500);
         }
     }
+
+
     public function getTopRatedProducts()
     {
         try {
