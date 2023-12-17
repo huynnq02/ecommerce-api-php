@@ -31,6 +31,10 @@ class ProductFactory extends Factory
                 'feature_1' => $this->faker->word,
                 'feature_2' => $this->faker->word,
             ],
+            'detail_images' => [
+                $this->faker->imageUrl(),
+                $this->faker->imageUrl(),
+            ],
         ];
     }
 }
