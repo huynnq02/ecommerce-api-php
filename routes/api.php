@@ -112,7 +112,7 @@ Route::group(['prefix' => 'carts', 'middleware' => 'api',], function () {
     // Route::get('/{id}', [CartController::class, 'getCart']);
     Route::get('/', [CartController::class, 'getAllCarts'])->withoutmiddleware(['auth']);
     Route::post('/', [CartController::class, 'createCart']);
-    Route::put('/{id}', [CartController::class, 'updateCart']);
+    Route::patch('/{id}', [CartController::class, 'updateCart'])->withoutmiddleware(['auth']);
     Route::delete('/{id}', [CartController::class, 'deleteCart']);
     Route::delete('/{id}/products/{product_id}', [CartController::class, 'deleteProductFromCart']);
     Route::get('/cart', [CartController::class, 'viewCart'])->withoutmiddleware(['auth']);

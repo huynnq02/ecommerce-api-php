@@ -55,8 +55,9 @@ class CartController extends Controller
 
     public function updateCart(Request $request, $id)
     {
-        DB::beginTransaction();
         try {
+            DB::beginTransaction();
+
             $cart = Cart::findOrFail($id);
 
             if ($request->filled(['customer_id', 'discount_id', 'total_price'])) {
@@ -68,11 +69,14 @@ class CartController extends Controller
                 $product_id = $request->input('product_id');
                 $quantity = $request->input('quantity');
 
-                $cartDetail = $cart->cartDetails->where('product_id', $product_id)->first();
-
+                $cartDetail = $cart->cartDetails()->where('product_id', $product_id)->first();
+                Log::info($cartDetail);
                 if ($cartDetail) {
                     if ($quantity > 0) {
-                        $cartDetail->update(['quantity' => $quantity]);
+                        DB::table('cart_details')
+                            ->where('cart_id', $cart->cart_id,)
+                            ->where('product_id', $product_id)
+                            ->update(['quantity' => $quantity]);
                     } else {
                         $cartDetail->delete();
                     }
@@ -90,13 +94,13 @@ class CartController extends Controller
                 return $detail->quantity * $detail->product->price;
             });
             $cart->update(['total_price' => $totalPrice]);
+            DB::commit();
 
             return response()->json([
                 'success' => true,
                 'data' => $cart,
                 'message' => 'Cart updated successfully',
             ], 200);
-            DB::commit();
         } catch (\Illuminate\Database\Eloquent\ModelNotFoundException $e) {
             return response()->json(['success' => false, 'message' => 'Cart not found'], 404);
         } catch (\Exception $e) {
@@ -104,7 +108,6 @@ class CartController extends Controller
             return response()->json(['error' => $e->getMessage()], 500);
         }
     }
-
     public function deleteCart($id)
     {
         try {
