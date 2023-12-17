@@ -166,7 +166,8 @@ class ProductController extends Controller
     public function getTopSellingProducts()
     {
         try {
-            $topSellingProducts = Product::select('products.product_id', 'products.category_id', 'products.name', 'products.price', 'products.description', 'products.image', 'products.amount', 'products.rating_average', 'products.specifications', 'products.highlight')
+            $topSellingProducts = Product::with('category')
+                ->select('products.product_id', 'products.category_id', 'products.name', 'products.price', 'products.description', 'products.image', 'products.amount', 'products.rating_average', 'products.specifications', 'products.highlight')
                 ->join('order_details', 'products.product_id', '=', 'order_details.product_id')
                 ->selectRaw('SUM(order_details.quantity) as total_sold')
                 ->groupBy('products.product_id', 'products.category_id', 'products.name', 'products.price', 'products.description', 'products.image', 'products.amount', 'products.rating_average', 'products.specifications', 'products.highlight')
@@ -187,11 +188,33 @@ class ProductController extends Controller
     public function getTopRatedProducts()
     {
         try {
-
-            $topRatedProducts = DB::table('products')
+            $topRatedProducts = Product::with('category')
                 ->join('reviews', 'products.product_id', '=', 'reviews.product_id')
-                ->select('products.*', DB::raw('AVG(reviews.star) as average_rating'))
-                ->groupBy('products.product_id')
+                ->select(
+                    'products.product_id',
+                    'products.category_id',
+                    'products.name',
+                    'products.price',
+                    'products.description',
+                    'products.image',
+                    'products.amount',
+                    'products.rating_average',
+                    'products.specifications',
+                    'products.highlight',
+                    DB::raw('AVG(reviews.star) as average_rating')
+                )
+                ->groupBy(
+                    'products.product_id',
+                    'products.category_id',
+                    'products.name',
+                    'products.price',
+                    'products.description',
+                    'products.image',
+                    'products.amount',
+                    'products.rating_average',
+                    'products.specifications',
+                    'products.highlight'
+                )
                 ->orderByDesc('average_rating')
                 ->limit(9)
                 ->get();
