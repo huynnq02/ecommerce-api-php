@@ -96,9 +96,9 @@ class CartController extends Controller
                 'data' => $cart,
                 'message' => 'Cart updated successfully',
             ], 200);
+            DB::commit();
         } catch (\Illuminate\Database\Eloquent\ModelNotFoundException $e) {
             return response()->json(['success' => false, 'message' => 'Cart not found'], 404);
-            DB::commit();
         } catch (\Exception $e) {
             DB::rollBack();
             return response()->json(['error' => $e->getMessage()], 500);

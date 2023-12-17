@@ -51,7 +51,7 @@ Route::group(['prefix' => 'customers', 'middleware' => 'api',], function () {
 
     Route::post('/', [CustomerController::class, 'createCustomer'])->withoutmiddleware(['auth']);
     Route::get('/{id}', [CustomerController::class, 'getCustomer']);
-    Route::get('/', [CustomerController::class, 'getAllCustomers']);
+    Route::get('/', [CustomerController::class, 'getAllCustomers'])->withoutmiddleware(['auth']);
     Route::delete('/{id}', [CustomerController::class, 'deleteCustomer']);
     Route::put('/{id}', [CustomerController::class, 'updateCustomer']);
 
@@ -65,10 +65,10 @@ route::group(['prefix' => 'products'], function () {
     route::get('/{id}', [productcontroller::class, 'getproduct'])->withoutmiddleware(['auth']);
     route::get('/', [productcontroller::class, 'getAllproducts'])->withoutmiddleware(['auth']);
     route::get('/searchProducts', [productcontroller::class, 'searchProduct'])->withoutmiddleware(['auth']);
-    route::get('/bestSellProducts', [productcontroller::class, 'getTopSellingProducts'])->withoutmiddleware(['auth']);
-    route::get('/topRateProducts', [productcontroller::class, 'getTopRatedProducts'])->withoutmiddleware(['auth']);
+    route::get('/sell/bestSellProducts', [productcontroller::class, 'getTopSellingProducts'])->withoutmiddleware(['auth']);
+    route::get('/rate/topRateProducts', [productcontroller::class, 'getTopRatedProducts'])->withoutmiddleware(['auth']);
+    Route::get('/sell/recentProduct', [ProductController::class, 'getRecentlyCreatedProducts'])->withoutmiddleware(['auth']);
     route::get('/similarProduct/{id}', [productcontroller::class, 'getSimilarProducts'])->withoutmiddleware(['auth']);
-    route::get('/recentProduct', [productcontroller::class, 'getRecentlyCreatedProducts'])->withoutmiddleware(['auth']);
 
     route::middleware('api')->group(function () {
         route::post('/', [productcontroller::class, 'createproduct'])->withoutmiddleware(['auth']);
@@ -109,15 +109,16 @@ Route::group(['prefix' => 'discounts', 'middleware' => 'api',], function () {
 
 Route::group(['prefix' => 'carts', 'middleware' => 'api',], function () {
     // Route::get('/{id}', [CartController::class, 'getCart']);
-    Route::get('/', [CartController::class, 'getAllCarts']);
+    Route::get('/', [CartController::class, 'getAllCarts'])->withoutmiddleware(['auth']);
     Route::post('/', [CartController::class, 'createCart']);
     Route::put('/{id}', [CartController::class, 'updateCart']);
     Route::delete('/{id}', [CartController::class, 'deleteCart']);
     Route::delete('/{id}/products/{product_id}', [CartController::class, 'deleteProductFromCart']);
-    Route::get('/cart', [CartController::class, 'viewCart']);
+    Route::get('/cart', [CartController::class, 'viewCart'])->withoutmiddleware(['auth']);
+
     Route::post('/addProduct/{id}', [CartController::class, 'addProductToCart']);
     Route::post('/{id}/addDiscount/{discountId}', [CartController::class, 'addDiscountToCart']);
-    Route::delete('discount/{id}', [CartController::class, 'removeDiscountFromCart']);
+    Route::delete('discount/{id}', [CartController::class, 'removeDiscountFromCart'])->withoutmiddleware(['auth']);
 });
 
 Route::group(['prefix' => 'employees', 'middleware' => 'api',], function () {
@@ -168,6 +169,7 @@ Route::group([
     Route::get('/', [OrderController::class, 'getAllOrders'])->withoutmiddleware(['auth']);
     Route::delete('/{id}', [OrderController::class, 'deleteOrder']);
     Route::put('/{id}', [OrderController::class, 'updateOrder']);
+
     Route::post('/get-coordinates', [OrderController::class, 'getCoordinates'])->withoutmiddleware(['auth']);;
     Route::get('/order/customer-history', [OrderController::class, 'getCustomerOrderHistory']);
     Route::get('/order/searchOrders', [OrderController::class, 'searchOrder']);
