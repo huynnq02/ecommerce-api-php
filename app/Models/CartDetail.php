@@ -10,6 +10,7 @@ class CartDetail extends Model
 {
     use HasFactory;
     public $timestamps = false;
+    protected $primaryKey = 'cart_detail_id';
 
     protected $fillable = [
         'product_id',

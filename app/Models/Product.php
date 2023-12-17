@@ -23,11 +23,13 @@ class Product extends Model
         'rating_average',
         'specifications',
         'highlight',
+        'detail_images',
     ];
 
     protected $casts = [
         'specifications' => 'json',
         'highlight' => 'json',
+        'detail_images' => 'json',
     ];
     protected $attributes = [
         'number_of_sold' => 0,
