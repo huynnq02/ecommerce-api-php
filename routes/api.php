@@ -59,6 +59,7 @@ Route::group(['prefix' => 'customers', 'middleware' => 'api',], function () {
     Route::get('/{id}/invoices', [CustomerController::class, 'getCustomerInvoices'])->withoutmiddleware(['auth']);
     Route::get('/{id}/inquiries', [CustomerController::class, 'getCustomerInquiries'])->withoutmiddleware(['auth']);
     Route::get('/{id}/reviews', [CustomerController::class, 'getCustomerReviews'])->withoutmiddleware(['auth']);
+    Route::get('/customer/totalAccountInMonth', [CustomerController::class, 'getTotalCustomersInMonth'])->withoutmiddleware(['auth']);
 });
 
 route::group(['prefix' => 'products'], function () {
@@ -177,6 +178,10 @@ Route::group([
     Route::get('/order/customer-history', [OrderController::class, 'getCustomerOrderHistory'])->withoutmiddleware(['auth']);
     Route::get('/order/search', [OrderController::class, 'searchOrder'])->withoutmiddleware(['auth']);
     Route::get('/order/status/{status}', [OrderController::class, 'searchOrderByStatus'])->withoutmiddleware(['auth']);
+    Route::get('/order/revenueMonth', [OrderController::class, 'getMonthlyRevenue'])->withoutmiddleware(['auth']);
+    Route::get('/order/totalOrderInMonth', [OrderController::class, 'getTotalOrdersInMonth'])->withoutmiddleware(['auth']);
+    Route::get('/order/monthRevenue', [OrderController::class, 'getMonthlyRevenueArray'])->withoutmiddleware(['auth']);
+    Route::get('/order/latestOrder', [OrderController::class, 'getLatestOrders'])->withoutmiddleware(['auth']);
 });
 
 Route::group(['prefix' => 'supplier', 'middleware' => 'api',], function () {
