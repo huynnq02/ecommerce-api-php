@@ -172,9 +172,11 @@ Route::group([
     Route::post('/update-status/{id}', [OrderController::class, 'updateOrderStatus'])->withoutmiddleware(['auth']);
 
     Route::post('/get-coordinates', [OrderController::class, 'getCoordinates'])->withoutmiddleware(['auth']);;
-    Route::get('/order/customer-history', [OrderController::class, 'getCustomerOrderHistory']);
     Route::get('/order/searchOrders', [OrderController::class, 'searchOrder']);
     
+    Route::get('/order/customer-history', [OrderController::class, 'getCustomerOrderHistory'])->withoutmiddleware(['auth']);
+    Route::get('/order/search', [OrderController::class, 'searchOrder'])->withoutmiddleware(['auth']);
+    Route::get('/order/status/{status}', [OrderController::class, 'searchOrderByStatus'])->withoutmiddleware(['auth']);
 });
 
 Route::group(['prefix' => 'supplier', 'middleware' => 'api',], function () {
