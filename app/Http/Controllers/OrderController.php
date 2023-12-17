@@ -346,4 +346,18 @@ class OrderController extends Controller
             return response()->json(['error' => $e->getMessage()], 500);
         }
     }
+
+    public function getLatestOrders(Request $request)
+    {
+        try {
+            $latestOrders = Order::with('customer')
+                ->orderBy('date', 'desc')
+                ->limit(10)
+                ->get();
+
+            return response()->json(['success' => true, 'data' => $latestOrders], 200);
+        } catch (\Exception $e) {
+            return response()->json(['error' => $e->getMessage()], 500);
+        }
+    }
 }
