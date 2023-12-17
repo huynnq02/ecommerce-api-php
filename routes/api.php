@@ -116,6 +116,7 @@ Route::group(['prefix' => 'carts', 'middleware' => 'api',], function () {
     Route::delete('/{id}', [CartController::class, 'deleteCart']);
     Route::delete('/{id}/products/{product_id}', [CartController::class, 'deleteProductFromCart']);
     Route::get('/cart', [CartController::class, 'viewCart'])->withoutmiddleware(['auth']);
+    Route::post('/{id}/createOrder', [CartController::class, 'createOrderFromCart']);
 
     Route::post('/addProduct/{id}', [CartController::class, 'addProductToCart']);
     Route::post('/{id}/addDiscount/{discountId}', [CartController::class, 'addDiscountToCart']);
