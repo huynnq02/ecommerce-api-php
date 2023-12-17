@@ -13,6 +13,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use App\Constants\PaginationConstants;
 use Illuminate\Pagination\LengthAwarePaginator;
+use Carbon\Carbon;
 
 class CustomerController extends Controller
 {
@@ -46,8 +47,8 @@ class CustomerController extends Controller
                 ]);
                 $cart = Cart::create([
                     'customer_id' => $customer->customer_id,
-                    'discount_id' => null, 
-                    'total_price' => 0, 
+                    'discount_id' => null,
+                    'total_price' => 0,
                 ]);
                 // Return both $account and $customer
                 return ['account' => $account, 'customer' => $customer];
@@ -203,6 +204,25 @@ class CustomerController extends Controller
                 'success' => true,
                 'data' => $customerReviews,
             ], 200);
+        } catch (\Exception $e) {
+            return response()->json(['error' => $e->getMessage()], 500);
+        }
+    }
+    public function getTotalCustomersInMonth(Request $request)
+    {
+        try {
+
+            $currentMonth = Carbon::now()->month;
+            $currentYear = Carbon::now()->year;
+
+
+            $totalCustomers = Customer::whereHas('account', function ($query) use ($currentMonth, $currentYear) {
+                $query->whereMonth('created_at', $currentMonth)
+                    ->whereYear('created_at', $currentYear);
+            })->count();
+
+
+            return response()->json(['success' => true, 'data' => ['total_customers' => $totalCustomers]], 200);
         } catch (\Exception $e) {
             return response()->json(['error' => $e->getMessage()], 500);
         }
