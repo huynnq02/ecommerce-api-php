@@ -12,6 +12,7 @@ use Illuminate\Support\Facades\Http;
 use App\Constants\PaginationConstants;
 use Illuminate\Http\Client\RequestException;
 use Illuminate\Pagination\LengthAwarePaginator;
+use Carbon\Carbon;
 
 
 use function App\Helpers\getCoordinates;
@@ -274,6 +275,73 @@ class OrderController extends Controller
                     'total' => $paginator->total(),
                 ],
             ], 200);
+        } catch (\Exception $e) {
+            return response()->json(['error' => $e->getMessage()], 500);
+        }
+    }
+
+    public function getMonthlyRevenue(Request $request)
+    {
+        try {
+
+            $currentMonth = Carbon::now()->month;
+            $currentYear = Carbon::now()->year;
+
+
+            $orders = Order::where('status', 'Complete')
+                ->whereMonth('date',  $currentMonth)
+                ->whereYear('date', $currentYear)
+                ->get();
+
+
+            $totalRevenue = $orders->sum('total_price');
+
+            return response()->json(['success' => true, 'data' => ['total_revenue' => $totalRevenue]], 200);
+        } catch (\Exception $e) {
+            return response()->json(['error' => $e->getMessage()], 500);
+        }
+    }
+
+    public function getTotalOrdersInMonth(Request $request)
+    {
+        try {
+
+            $currentMonth = Carbon::now()->month;
+            $currentYear = Carbon::now()->year;
+
+
+            $totalOrders = Order::where('status', '<>', 'Canceled')
+                ->whereMonth('date', $currentMonth)
+                ->whereYear('date', $currentYear)
+                ->count();
+
+            return response()->json(['success' => true, 'data' => ['total_orders' => $totalOrders]], 200);
+        } catch (\Exception $e) {
+            return response()->json(['error' => $e->getMessage()], 500);
+        }
+    }
+    public function getMonthlyRevenueArray(Request $request)
+    {
+        try {
+            $currentYear = Carbon::now()->year;
+
+            $monthlyRevenueArray = [];
+
+            for ($month = 1; $month <= 12; $month++) {
+                $orders = Order::where('status', 'Complete')
+                    ->whereMonth('date', $month)
+                    ->whereYear('date', $currentYear)
+                    ->get();
+
+                $totalRevenue = $orders->sum('total_price');
+
+                $monthlyRevenueArray[] = [
+                    'month' => $month,
+                    'total_revenue' => $totalRevenue,
+                ];
+            }
+
+            return response()->json(['success' => true, 'data' => $monthlyRevenueArray], 200);
         } catch (\Exception $e) {
             return response()->json(['error' => $e->getMessage()], 500);
         }
