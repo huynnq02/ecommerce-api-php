@@ -123,14 +123,14 @@ Route::group(['prefix' => 'carts', 'middleware' => 'api',], function () {
 });
 
 Route::group(['prefix' => 'employees', 'middleware' => 'api',], function () {
-    Route::post('/', [EmployeeController::class, 'createEmployee']);
-    Route::get('/{id}', [EmployeeController::class, 'getEmployee']);
-    Route::get('/', [EmployeeController::class, 'getAllEmployees']);
-    Route::delete('/{id}', [EmployeeController::class, 'deleteEmployee']);
-    Route::put('/{id}', [EmployeeController::class, 'updateEmployee']);
+    Route::post('/', [EmployeeController::class, 'createEmployee'])->withoutmiddleware(['auth']);
+    Route::get('/{id}', [EmployeeController::class, 'getEmployee'])->withoutmiddleware(['auth']);
+    Route::get('/', [EmployeeController::class, 'getAllEmployees'])->withoutmiddleware(['auth']);
+    Route::delete('/{id}', [EmployeeController::class, 'deleteEmployee'])->withoutmiddleware(['auth']);
+    Route::put('/{id}', [EmployeeController::class, 'updateEmployee'])->withoutmiddleware(['auth']);
 
-    Route::get('/{id}/orders', [EmployeeController::class, 'getEmployeeOrders']);
-    Route::get('/{id}/invoices', [EmployeeController::class, 'getEmployeeInvoices']);
+    Route::get('/{id}/orders', [EmployeeController::class, 'getEmployeeOrders'])->withoutmiddleware(['auth']);
+    Route::get('/{id}/invoices', [EmployeeController::class, 'getEmployeeInvoices'])->withoutmiddleware(['auth']);
 });
 
 Route::group(['prefix' => 'inquiry', 'middleware' => 'api',], function () {
@@ -193,9 +193,12 @@ Route::group(['prefix' => 'supplier', 'middleware' => 'api',], function () {
 });
 
 Route::group(['prefix' => 'warehouse', 'middleware' => 'api',], function () {
-    Route::post('/', [WarehouseController::class, 'createWarehouse'])->withoutmiddleware(['auth']);;
-    Route::get('/{id}', [WarehouseController::class, 'getWarehouse']);
-    Route::get('/', [WarehouseController::class, 'getAllWarehouse']);
-    Route::delete('/{id}', [WarehouseController::class, 'deleteWarehouse']);
-    Route::put('/{id}', [WarehouseController::class, 'updateWarehouse']);
+    Route::post('/', [WarehouseController::class, 'createWarehouse'])->withoutmiddleware(['auth']);
+    Route::get('/{id}', [WarehouseController::class, 'getWarehouse'])->withoutmiddleware(['auth']);
+    Route::get('/', [WarehouseController::class, 'getAllWarehouse'])->withoutmiddleware(['auth']);
+    Route::delete('/{id}', [WarehouseController::class, 'deleteWarehouse'])->withoutmiddleware(['auth']);
+    Route::put('/{id}', [WarehouseController::class, 'updateWarehouse'])->withoutmiddleware(['auth']);
+
+    Route::post('/receipt',[WarehouseController::class, 'receipt'])->withoutmiddleware(['auth']);
+    Route::get('/receipt/all',[WarehouseController::class, 'getAllReceipt'])->withoutmiddleware(['auth']);
 });

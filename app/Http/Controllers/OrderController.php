@@ -357,10 +357,11 @@ class OrderController extends Controller
 
                 $totalRevenue = $orders->sum('total_price');
 
-                $monthlyRevenueArray[] = [
-                    'month' => $month,
-                    'total_revenue' => $totalRevenue,
-                ];
+                // $monthlyRevenueArray[] = [
+                //     'month' => $month,
+                //     'total_revenue' => $totalRevenue,
+                // ];
+                $monthlyRevenueArray[] =  $totalRevenue;
             }
 
             return response()->json(['success' => true, 'data' => $monthlyRevenueArray], 200);

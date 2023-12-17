@@ -166,15 +166,14 @@ class ProductController extends Controller
     public function getTopSellingProducts()
     {
         try {
-
-            $topSellingProducts = Product::select('products.*')
+            $topSellingProducts = Product::select('products.product_id', 'products.category_id', 'products.name', 'products.price', 'products.description', 'products.image', 'products.amount', 'products.rating_average', 'products.specifications', 'products.highlight')
                 ->join('order_details', 'products.product_id', '=', 'order_details.product_id')
                 ->selectRaw('SUM(order_details.quantity) as total_sold')
-                ->groupBy('products.product_id')
+                ->groupBy('products.product_id', 'products.category_id', 'products.name', 'products.price', 'products.description', 'products.image', 'products.amount', 'products.rating_average', 'products.specifications', 'products.highlight')
                 ->orderByDesc('total_sold')
                 ->take(8)
                 ->get();
-
+    
             return response()->json([
                 'success' => true,
                 'data' => $topSellingProducts

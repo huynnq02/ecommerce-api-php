@@ -15,21 +15,21 @@ class WarehouseController extends Controller
     public function createWarehouse(Request $request)
     {
         try {
-            Log::info("1");
-            $data = getCoordinatesHelper($request->input('location'));
-            Log::info("kkk");
-            $locationWithLatLon = $request->input('location');
-            Log::info($data);
-            if ($data) {
-                // Add latitude and longitude to the existing location array
-                $locationWithLatLon = array_merge($request->input('location'), ['lat' => $data[0], 'lon' => $data[1]]);
-                Log::info("2");
-                Log::info($locationWithLatLon);
-            }
+            // Log::info("1");
+            // $data = getCoordinatesHelper($request->input('location'));
+            // Log::info("kkk");
+            // $locationWithLatLon = $request->input('location');
+            // Log::info($data);
+            // if ($data) {
+            //     // Add latitude and longitude to the existing location array
+            //     $locationWithLatLon = array_merge($request->input('location'), ['lat' => $data[0], 'lon' => $data[1]]);
+            //     Log::info("2");
+            //     Log::info($locationWithLatLon);
+            // }
             $warehouse = Warehouse::create([
                 'warehouse_name' => $request->input('warehouse_name'),
                 'image' => $request->input('image'),
-                'location' => $locationWithLatLon,
+                'location' => $request->input('location'),
                 'employee_id' => $request->input('employee_id'),
                 'description' => $request->input('description'),
 
@@ -66,7 +66,27 @@ class WarehouseController extends Controller
             return response()->json(['error' => $e->getMessage()], 400);
         }
     }
+    public function receipt(Request $request){
+        try {
+            if ($request->has('warehouse_details')) {
+                $warehouseDetails = $request->input('warehouse_details');
 
+                foreach ($warehouseDetails as $detail) {
+                   
+                        WarehouseDetail::create([
+                            'warehouse_id' => $detail['warehouse_id'],
+                            'product_id' => $detail['product_id'],
+                            'quantity' => $detail['quantity'],
+                            'unit' => $detail['unit'],
+                        ]);
+                    }
+                }
+                return response()->json(['success' => true, 'message' => 'Successfully'], 201);
+
+        } catch (\Exception $e) {
+            return response()->json(['error' => $e->getMessage()], 404);
+        }
+    }
     public function updateWarehouse(Request $request, $id)
     {
         try {
@@ -134,7 +154,17 @@ class WarehouseController extends Controller
             return response()->json(['error' => $e->getMessage()], 500);
         }
     }
+    public function getAllReceipt()
+    {
+        try {
+            // Lấy tất cả các kho cùng với thông tin liên quan
+            $warehouses = WarehouseDetail::all();
 
+            return response()->json(['success' => true, 'data' => $warehouses], 200);
+        } catch (\Exception $e) {
+            return response()->json(['error' => $e->getMessage()], 500);
+        }
+    }
 
     public function deleteWarehouse($id)
     {
