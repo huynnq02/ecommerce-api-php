@@ -314,7 +314,14 @@ class CartController extends Controller
             if (!$cart) {
                 return response()->json(['success' => false, 'message' => 'Cart not found'], 404);
             }
-
+            foreach ($cart->cartDetails as $cartDetail) {
+                // Check if the product quantity is sufficient
+                $product = Product::find($cartDetail->product_id);
+                if (!$product || $product->amount < $cartDetail->quantity) {
+                    DB::rollBack();
+                    return response()->json(['success' => false, 'message' => 'Insufficient quantity for one or more products'], 400);
+                }
+            }
             $discountValue = 0;
             $total_price = $cart->total_price ?? 0;
             if ($cart->discount) {
@@ -342,6 +349,7 @@ class CartController extends Controller
                 $product = Product::find($cartDetail->product_id);
                 if ($product) {
                     $product->increment('number_of_sold', $cartDetail->quantity);
+                    $product->decrement('quantity', $cartDetail->quantity);
                 }
             }
 
