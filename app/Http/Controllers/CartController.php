@@ -349,7 +349,7 @@ class CartController extends Controller
                 $product = Product::find($cartDetail->product_id);
                 if ($product) {
                     $product->increment('number_of_sold', $cartDetail->quantity);
-                    $product->decrement('quantity', $cartDetail->quantity);
+                    $product->decrement('amount', $cartDetail->quantity);
                 }
             }
 
