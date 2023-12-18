@@ -243,7 +243,7 @@ class CartController extends Controller
         }
     }
 
-    public function addDiscountToCart($discountId, $id)
+    public function addDiscountToCart($id, $discountId)
     {
         try {
             $cart = Cart::findOrFail($id);
@@ -269,7 +269,7 @@ class CartController extends Controller
 
             return response()->json([
                 'success' => true,
-                'data' => $cart,
+                'data' => [$cart, $discount],
                 'message' => 'Discount added to the cart successfully',
             ], 200);
         } catch (\Illuminate\Database\Eloquent\ModelNotFoundException $e) {

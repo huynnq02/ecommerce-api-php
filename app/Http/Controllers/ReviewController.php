@@ -105,4 +105,40 @@ class ReviewController extends Controller
             return response()->json(['error' => $e->getMessage()], 500);
         }
     }
+
+    public function getReviewsByProduct(Request $request, $productId)
+    {
+        try {
+            $perPage = $request->input('per_page', PaginationConstants::DEFAULT_PER_PAGE);
+            $page = $request->input('page', PaginationConstants::DEFAULT_PAGE);
+
+            $reviews = Review::with('product', 'customer')
+                ->where('product_id', $productId)
+                ->orderBy('date', 'desc')
+                ->paginate($perPage, ['*'], 'page', $page);
+
+            $paginator = new LengthAwarePaginator(
+                $reviews->items(),
+                $reviews->total(),
+                $reviews->perPage(),
+                $reviews->currentPage(),
+                ['path' => $request->url(), 'query' => $request->query()]
+            );
+
+            return response()->json(
+                [
+                    'success' => true,
+                    'data' => $paginator->items(),
+                    'pagination' => [
+                        'current_page' => $paginator->currentPage(),
+                        'last_page' => $paginator->lastPage(),
+                        'total' => $paginator->total(),
+                    ],
+                ],
+                200
+            );
+        } catch (\Exception $e) {
+            return response()->json(['error' => $e->getMessage()], 500);
+        }
+    }
 }
