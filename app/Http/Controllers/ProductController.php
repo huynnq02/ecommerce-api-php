@@ -99,7 +99,7 @@ class ProductController extends Controller
             return response()->json([
                 'success' => true,
                 'message' => 'Product deleted successfully'
-            ], 204);
+            ], 200);
         } catch (\Exception $e) {
             return response()->json(['success' => false, 'error' => $e->getMessage()], 500);
         }
