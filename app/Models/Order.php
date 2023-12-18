@@ -22,6 +22,9 @@ class Order extends Model
         'status',
     ];
 
+    protected $casts = [
+        'destination' => 'json', // Cast the 'address' attribute to JSON
+    ];
     // Define the relationship with the Customer model
     public function customer()
     {
