@@ -119,7 +119,7 @@ Route::group(['prefix' => 'carts', 'middleware' => 'api',], function () {
     Route::post('/{id}/createOrder', [CartController::class, 'createOrderFromCart']);
 
     Route::post('/addProduct/{id}', [CartController::class, 'addProductToCart']);
-    Route::post('/{id}/addDiscount/{discountId}', [CartController::class, 'addDiscountToCart']);
+    Route::post('/{id}/addDiscount/{discountId}', [CartController::class, 'addDiscountToCart'])->withoutmiddleware(['auth']);
     Route::delete('discount/{id}', [CartController::class, 'removeDiscountFromCart'])->withoutmiddleware(['auth']);
 });
 
@@ -161,6 +161,7 @@ Route::group(['prefix' => 'reviews', 'middleware' => 'api',], function () {
         Route::delete('/{id}', [ReviewController::class, 'deleteReview']);
         Route::put('/{id}', [ReviewController::class, 'updateReview']);
     });
+    Route::get('/review/reviewsByProduct/{productId}', [ReviewController::class, 'getReviewsByProduct'])->withoutmiddleware(['auth']);
 });
 
 Route::group([
