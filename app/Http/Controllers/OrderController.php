@@ -132,7 +132,7 @@ class OrderController extends Controller
         
             $newStatus = $request->input('status');
         
-            $allowedStatuses = ['Processing', 'Shipping', 'Complete', 'Cancel'];
+            $allowedStatuses = ['Processing', 'Shipping', 'Complete', 'Canceled'];
         
             if (!in_array($newStatus, $allowedStatuses)) {
                 return response()->json(['error' => 'Invalid status value.'], 422);
