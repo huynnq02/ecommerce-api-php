@@ -144,10 +144,11 @@ class ProductController extends Controller
     public function searchProduct(Request $request)
     {
         try {
-            $productName = $request->input('product_name');
+            $keyword = $request->query('keyword');
+
 
             $products = Product::with('category')
-                ->where('name', 'like', '%' . $productName . '%')
+                ->where('name', 'like', '%' . $keyword . '%')
                 ->get();
 
             if ($products->isEmpty()) {
