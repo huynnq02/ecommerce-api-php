@@ -4,9 +4,11 @@
 namespace App\Http\Controllers;
 
 use App\Models\Cart;
-use App\Models\CartDetail;
-use App\Models\Discount;
+use App\Models\Order;
 use App\Models\Product;
+use App\Models\Discount;
+use App\Models\CartDetail;
+use App\Models\OrderDetail;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
@@ -14,6 +16,7 @@ use Tymon\JWTAuth\Contracts\Providers\Auth;
 
 class CartController extends Controller
 {
+
     public function createCart(Request $request)
     {
         try {
@@ -73,7 +76,10 @@ class CartController extends Controller
                 Log::info($cartDetail);
                 if ($cartDetail) {
                     if ($quantity > 0) {
-                        $cartDetail->update(['quantity' => $quantity]);
+                        DB::table('cart_details')
+                            ->where('cart_id', $cart->cart_id,)
+                            ->where('product_id', $product_id)
+                            ->update(['quantity' => $quantity]);
                     } else {
                         $cartDetail->delete();
                     }
@@ -105,7 +111,6 @@ class CartController extends Controller
             return response()->json(['error' => $e->getMessage()], 500);
         }
     }
-
     public function deleteCart($id)
     {
         try {
@@ -238,7 +243,7 @@ class CartController extends Controller
         }
     }
 
-    public function addDiscountToCart($discountId, $id)
+    public function addDiscountToCart($id, $discountId)
     {
         try {
             $cart = Cart::findOrFail($id);
@@ -264,7 +269,7 @@ class CartController extends Controller
 
             return response()->json([
                 'success' => true,
-                'data' => $cart,
+                'data' => [$cart, $discount],
                 'message' => 'Discount added to the cart successfully',
             ], 200);
         } catch (\Illuminate\Database\Eloquent\ModelNotFoundException $e) {
@@ -293,6 +298,86 @@ class CartController extends Controller
         } catch (\Illuminate\Database\Eloquent\ModelNotFoundException $e) {
             return response()->json(['success' => false, 'message' => 'Cart not found'], 404);
         } catch (\Exception $e) {
+            return response()->json(['error' => $e->getMessage()], 500);
+        }
+    }
+    public function createOrderFromCart(Request $request, $id)
+    {
+        try {
+            $cart = Cart::with('customer', 'cartDetails.product', 'discount')->findOrFail($id);
+
+            if ($cart->cartDetails->isEmpty()) {
+                return response()->json(['success' => false, 'message' => 'Cart is empty, nothing to process'], 400);
+            }
+
+            DB::beginTransaction();
+
+
+            if (!$cart) {
+                return response()->json(['success' => false, 'message' => 'Cart not found'], 404);
+            }
+            foreach ($cart->cartDetails as $cartDetail) {
+                // Check if the product quantity is sufficient
+                $product = Product::find($cartDetail->product_id);
+                if (!$product || $product->amount < $cartDetail->quantity) {
+                    DB::rollBack();
+                    return response()->json(['success' => false, 'message' => 'Insufficient quantity for one or more products'], 400);
+                }
+            }
+            $discountValue = 0;
+            $total_price = $cart->total_price ?? 0;
+            if ($cart->discount) {
+                $discountValue =  $cart->discount->discount_value;
+            }
+
+            $totalPriceAfterDiscount = $total_price - $discountValue;
+
+            $order = Order::create([
+                'customer_id' => $cart->customer_id,
+                'total_price' => $totalPriceAfterDiscount,
+                'payment_method' => $request->input('payment_method', 'Cash'),
+                'destination' => $request->input('destination', 'Default Destination'),
+                'date' => now(),
+                'status' => Order::DEFAULT_STATUS,
+            ]);
+
+            foreach ($cart->cartDetails as $cartDetail) {
+                OrderDetail::create([
+                    'order_id' => $order->order_id,
+                    'product_id' => $cartDetail->product_id,
+                    'quantity' => $cartDetail->quantity,
+                ]);
+                // Update the number_of_sold attribute for the corresponding product
+                $product = Product::find($cartDetail->product_id);
+                if ($product) {
+                    $product->increment('number_of_sold', $cartDetail->quantity);
+                    $product->decrement('quantity', $cartDetail->quantity);
+                }
+            }
+
+            // Return the order with all the data
+            $order->refresh(); // Refresh the model to get the updated data
+            $order->load('customer', 'orderDetails.product'); // Load relationships
+
+            // Delete all the cartDetails to empty the cart
+            $cart->cartDetails()->delete();
+            $cart->update(['total_price' => 0]);
+            DB::commit();
+
+            return response()->json([
+                'success' => true,
+                'data' => [
+                    'order' => $order,
+                    'discount_in_cart' => $cart->discount,
+                    'total_price' => $total_price,
+                    'total_price_after_discount' => $totalPriceAfterDiscount,
+                ],
+                'message' => 'Order created successfully',
+            ], 201);
+        } catch (\Illuminate\Database\Eloquent\ModelNotFoundException $e) {
+            return response()->json(['success' => false, 'message' => 'Cart not found'], 404);
+        } catch (\Exception $e) {
+            DB::rollBack();
             return response()->json(['error' => $e->getMessage()], 500);
         }
     }

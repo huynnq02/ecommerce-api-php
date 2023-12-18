@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use Carbon\Carbon;
 use App\Models\Cart;
 use App\Models\Order;
 use App\Models\Review;
@@ -10,20 +11,26 @@ use App\Models\Inquiry;
 use App\Models\Invoice;
 use App\Models\Customer;
 use Illuminate\Http\Request;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 use App\Constants\PaginationConstants;
 use Illuminate\Pagination\LengthAwarePaginator;
-use Carbon\Carbon;
 
 class CustomerController extends Controller
 {
     public function createCustomer(Request $request)
     {
         try {
+            Log::info("1");
             $result = DB::transaction(function () use ($request) {
+                Log::info("2");
+
                 $existingAccount = Account::where('email', $request->input('email'))->first();
+                Log::info($existingAccount);
 
                 if ($existingAccount) {
+                    // Return a JsonResponse immediately
                     return response()->json(['success' => false, 'error' => 'User with this email already exists'], 409);
                 }
 
@@ -50,9 +57,15 @@ class CustomerController extends Controller
                     'discount_id' => null,
                     'total_price' => 0,
                 ]);
+
                 // Return both $account and $customer
                 return ['account' => $account, 'customer' => $customer];
             });
+
+            // Check if the result is a JsonResponse (indicating an error)
+            if ($result instanceof JsonResponse) {
+                return $result;
+            }
 
             // Access $account and $customer outside the closure
             return response()->json(['success' => true, 'data' => $result['customer']], 201);
