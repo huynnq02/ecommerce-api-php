@@ -76,7 +76,10 @@ class CartController extends Controller
                 Log::info($cartDetail);
                 if ($cartDetail) {
                     if ($quantity > 0) {
-                        $cartDetail->update(['quantity' => $quantity]);
+                        DB::table('cart_details')
+                            ->where('cart_id', $cart->cart_id,)
+                            ->where('product_id', $product_id)
+                            ->update(['quantity' => $quantity]);
                     } else {
                         $cartDetail->delete();
                     }
