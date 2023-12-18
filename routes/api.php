@@ -112,14 +112,14 @@ Route::group(['prefix' => 'carts', 'middleware' => 'api',], function () {
     // Route::get('/{id}', [CartController::class, 'getCart']);
     Route::get('/', [CartController::class, 'getAllCarts'])->withoutmiddleware(['auth']);
     Route::post('/', [CartController::class, 'createCart']);
-    Route::put('/{id}', [CartController::class, 'updateCart']);
+    Route::patch('/{id}', [CartController::class, 'updateCart'])->withoutmiddleware(['auth']);
     Route::delete('/{id}', [CartController::class, 'deleteCart']);
     Route::delete('/{id}/products/{product_id}', [CartController::class, 'deleteProductFromCart']);
     Route::get('/cart', [CartController::class, 'viewCart'])->withoutmiddleware(['auth']);
     Route::post('/{id}/createOrder', [CartController::class, 'createOrderFromCart']);
 
     Route::post('/addProduct/{id}', [CartController::class, 'addProductToCart']);
-    Route::post('/{id}/addDiscount/{discountId}', [CartController::class, 'addDiscountToCart']);
+    Route::post('/{id}/addDiscount/{discountId}', [CartController::class, 'addDiscountToCart'])->withoutmiddleware(['auth']);
     Route::delete('discount/{id}', [CartController::class, 'removeDiscountFromCart'])->withoutmiddleware(['auth']);
 });
 
@@ -161,6 +161,7 @@ Route::group(['prefix' => 'reviews', 'middleware' => 'api',], function () {
         Route::delete('/{id}', [ReviewController::class, 'deleteReview']);
         Route::put('/{id}', [ReviewController::class, 'updateReview']);
     });
+    Route::get('/review/reviewsByProduct/{productId}', [ReviewController::class, 'getReviewsByProduct'])->withoutmiddleware(['auth']);
 });
 
 Route::group([
